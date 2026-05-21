@@ -1,0 +1,1743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CleanKart | Premium Laundry & Dry Cleaning</title>
+    <link rel="icon" type="image/png" href="images/cleankart_logo_round.png">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css?v=1.3">
+    <link rel="manifest" href="manifest.json">
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js');
+            });
+        }
+    </script>
+    <style>
+        .blink {
+            animation: blinker 1.5s linear infinite;
+        }
+        @keyframes blinker {
+            50% { opacity: 0; }
+        }
+        .dropdown-menu-dark.bg-glass {
+            background: #1a1c1e !important;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(15px);
+        }
+        .dropdown-item:hover {
+            background: rgba(255,255,255,0.1) !important;
+        }
+        @media (max-width: 767.98px) {
+            .hero-section h1.display-3 {
+                font-size: 1.65rem !important;
+                letter-spacing: -0.5px !important;
+                margin-bottom: 0.5rem !important;
+                text-align: center !important;
+                line-height: 1.2 !important;
+            }
+            .hero-section p.lead {
+                font-size: 0.85rem !important;
+                margin-bottom: 1.25rem !important;
+                text-align: center !important;
+                line-height: 1.35 !important;
+            }
+            .hero-section .d-flex.flex-wrap.gap-3 {
+                justify-content: center !important;
+                gap: 0.4rem !important;
+            }
+            #allIndiaPincodeCheckerWidget {
+                margin: 1.25rem auto 0 auto !important;
+                max-width: 100% !important;
+                padding: 0.75rem !important;
+            }
+            .hero-section .col-lg-7 {
+                text-align: center !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top bg-dark-glass border-bottom border-secondary py-3" style="backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); z-index: 1030;">
+        <div class="container">
+            <a class="navbar-brand fw-bold fs-3 text-primary d-flex align-items-center" href="#">
+                <img src="images/cleankart_logo.png" alt="CleanKart Logo" style="height: 40px; margin-right: 20px; border-radius: 8px;">CleanKart
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item"><a class="nav-link active" id="nav-home" href="javascript:void(0)" onclick="showSection('home'); window.scrollTo(0,0);">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" id="nav-categories" href="javascript:void(0)" onclick="showSection('home'); document.querySelectorAll('.nav-link').forEach(l=>l.classList.remove('active')); this.classList.add('active'); setTimeout(() => document.getElementById('services').scrollIntoView({behavior: 'smooth'}), 50);">Categories</a></li>
+                    <li class="nav-item"><a class="nav-link" id="nav-tracking" href="javascript:void(0)" onclick="showSection('tracking')">Track Order</a></li>
+                    <li class="nav-item"><a class="nav-link" id="nav-myOrders" href="javascript:void(0)" onclick="showSection('myOrders')">My Orders</a></li>
+                </ul>
+                <div class="d-flex align-items-center" id="authButtons">
+                    <button class="btn btn-outline-primary me-2" data-bs-toggle="modal" data-bs-target="#loginModal">Login</button>
+                    <button class="btn btn-primary me-4" data-bs-toggle="modal" data-bs-target="#signupModal">Sign Up</button>
+                    <div class="position-relative" id="headerCartContainerGuest" style="cursor: pointer;" data-bs-toggle="offcanvas" data-bs-target="#cartSidebar">
+                        <i class="fas fa-shopping-cart fs-5 text-light"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary" id="navCartBadge" style="font-size: 0.6rem;">0</span>
+                    </div>
+                </div>
+                <div class="d-none align-items-center" id="userProfile">
+                    <div class="dropdown me-3">
+                        <div class="text-light d-flex align-items-center" id="userName" data-bs-toggle="dropdown" style="cursor:pointer">
+                            <div class="avatar-circle me-2 bg-primary text-white d-flex align-items-center justify-content-center fw-bold" style="width: 35px; height: 35px; border-radius: 50%; font-size: 0.9rem;">U</div>
+                            <div class="d-flex flex-column">
+                                <span class="fw-bold small" id="userDisplayName">User</span>
+                                <span class="text-primary x-small" style="font-size: 0.7rem;">View Profile</span>
+                            </div>
+                        </div>
+                        <ul class="dropdown-menu dropdown-menu-dark bg-glass border-secondary shadow-lg">
+                            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#profileModal"><i class="fas fa-user-edit me-2 text-info"></i>Edit Profile</a></li>
+                            <li><hr class="dropdown-divider border-secondary"></li>
+                            <li><a class="dropdown-item text-danger" href="#" onclick="logout()"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                        </ul>
+                    </div>
+                    <div class="position-relative ms-2" id="headerCartContainerUser" style="cursor: pointer;" data-bs-toggle="offcanvas" data-bs-target="#cartSidebar">
+                        <i class="fas fa-shopping-cart fs-5 text-light"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary" id="navCartBadgeUser" style="font-size: 0.6rem;">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Toast Notification -->
+    <div class="toast-container position-fixed bottom-0 start-0 p-3" style="z-index: 2000;">
+        <div id="cartToast" class="toast bg-primary text-white border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="fas fa-check-circle me-2"></i>Item added to cart!
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+        <div id="appToast" class="toast bg-primary text-white border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="fas fa-info-circle me-2"></i>Notification message here
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- High-Impact Hero Section (Matched to Screenshot) -->
+    <header id="home" class="hero-section pt-2 pb-5 bg-darker overflow-hidden mt-0">
+        <div class="container py-4">
+            <div class="row align-items-center g-5">
+                <div class="col-lg-7 text-start">
+                    <h1 class="display-3 fw-bold text-white mb-4" style="letter-spacing: -2px; line-height: 1.1;">Welcome to <span class="text-primary">CleanKart</span></h1>
+                    <p class="lead text-secondary mb-5" style="font-size: 1.2rem; opacity: 0.8;">Premium Laundry & Dry Cleaning Service at your Doorstep. We care for your clothes as much as you do.</p>
+                    <div class="d-flex flex-wrap gap-3">
+                        <span class="badge bg-glass-dark border border-secondary p-2 px-3 rounded-pill" style="font-size: 0.85rem;"><i class="fas fa-star text-warning me-2"></i>Quality Service</span>
+                        <span class="badge bg-glass-dark border border-secondary p-2 px-3 rounded-pill" style="font-size: 0.85rem;"><i class="fas fa-bolt text-info me-2"></i>Fast Delivery</span>
+                        <span class="badge bg-glass-dark border border-secondary p-2 px-3 rounded-pill" style="font-size: 0.85rem;"><i class="fas fa-tag text-success me-2"></i>Affordable</span>
+                        <span class="badge bg-glass-dark border border-secondary p-2 px-3 rounded-pill" style="font-size: 0.85rem;"><i class="fas fa-map-marker-alt text-danger me-2"></i>Easy Tracking</span>
+                    </div>
+
+                    <!-- Brand New Pincode Serviceability Checker Widget -->
+                    <div id="allIndiaPincodeCheckerWidget" class="p-3 mt-4 rounded-4 bg-glass border border-secondary" style="max-width: 480px;">
+                        <h6 class="text-white small fw-bold mb-2"><i class="fas fa-location-crosshairs text-primary me-2"></i>CHECK SERVICE AVAILABILITY IN INDIA</h6>
+                        <div class="input-group">
+                            <input type="tel" id="inputPincodeAllIndia" name="pincodeCheckAllIndia" autocomplete="one-time-code" class="form-control bg-dark text-white border-secondary small" placeholder="Enter 6-digit Pincode (e.g. 110001)" maxlength="6">
+                            <button type="button" id="btnCheckPincodeAllIndia" class="btn btn-primary fw-bold" onclick="checkAllIndiaPincode()">Check Area</button>
+                        </div>
+                        <div id="allIndiaPincodeStatusMessage" class="mt-2 small d-none"></div>
+                    </div>
+                </div>
+                <div class="col-lg-5 text-end">
+                    <div class="hero-image-container p-2 rounded-5 bg-glass shadow-2xl d-inline-block border border-secondary" style="background: rgba(255,255,255,0.03); transform: translateY(-2px);">
+                        <picture>
+                            <source media="(max-width: 767px)" srcset="images/hero_mobile.png">
+                            <img src="images/hero.png" alt="Laundry Service" class="img-fluid rounded-4 shadow-lg" style="max-height: 360px; width: 100%; object-fit: cover;">
+                        </picture>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Integrated Slider -->
+            <div id="heroCarousel" class="carousel slide mb-0 rounded-4 overflow-hidden shadow-lg border border-secondary mt-4 custom-hero-carousel" data-bs-ride="carousel" data-bs-interval="3000">
+                <div class="carousel-inner h-100">
+                    <!-- Slider items remain same... -->
+                    <!-- Wash -->
+                    <div class="carousel-item active h-100">
+                        <div class="d-flex align-items-center justify-content-between h-100 px-5" style="background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);">
+                            <div class="text-start col-7">
+                                <span class="badge rounded-pill bg-primary px-2 mb-1" style="font-size: 0.6rem;">BIO-LAUNDRY</span>
+                                <h3 class="fw-bold mb-1 text-dark">Advanced Deep-Clean</h3>
+                                <p class="text-dark opacity-75 small mb-2">Molecular stain extraction & sanitization.</p>
+                                <a href="#services" class="btn btn-primary btn-sm rounded-pill px-4 shadow" onclick="filterByCategory('Wash', document.querySelectorAll('.category-item')[1])">Book Now <i class="fas fa-arrow-right ms-1"></i></a>
+                            </div>
+                            <div class="col-4 text-end">
+                                <div class="p-2 bg-white rounded-3 shadow-sm d-inline-block">
+                                    <img src="images/cat_wash.png" style="height: 110px; width: 110px; object-fit: contain;" alt="Wash">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Dry Clean -->
+                    <div class="carousel-item h-100">
+                        <div class="d-flex align-items-center justify-content-between h-100 px-5" style="background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);">
+                            <div class="text-start col-7">
+                                <span class="badge rounded-pill bg-dark px-2 mb-1" style="font-size: 0.6rem;">SIGNATURE</span>
+                                <h3 class="fw-bold mb-1 text-dark">Bespoke Dry Cleaning</h3>
+                                <p class="text-dark opacity-75 small mb-2">Eco-sensitive treatment for designer wear.</p>
+                                <a href="#services" class="btn btn-dark btn-sm rounded-pill px-4 shadow" onclick="filterByCategory('Dry Clean', document.querySelectorAll('.category-item')[2])">Book Now <i class="fas fa-arrow-right ms-1"></i></a>
+                            </div>
+                            <div class="col-4 text-end">
+                                <div class="p-2 bg-white rounded-3 shadow-sm d-inline-block">
+                                    <img src="images/cat_dryclean.png" style="height: 110px; width: 110px; object-fit: contain;" alt="Dry Clean">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Iron -->
+                    <div class="carousel-item h-100">
+                        <div class="d-flex align-items-center justify-content-between h-100 px-5" style="background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);">
+                            <div class="text-start col-7">
+                                <span class="badge rounded-pill bg-warning text-dark px-2 mb-1" style="font-size: 0.6rem;">PRECISION</span>
+                                <h3 class="fw-bold mb-1 text-dark">Artisan Steam Press</h3>
+                                <p class="text-dark opacity-75 small mb-2">High-pressure steam for a crisp finish.</p>
+                                <a href="#services" class="btn btn-warning btn-sm rounded-pill px-4 shadow" onclick="filterByCategory('Iron', document.querySelectorAll('.category-item')[3])">Book Now <i class="fas fa-arrow-right ms-1"></i></a>
+                            </div>
+                            <div class="col-4 text-end">
+                                <div class="p-2 bg-white rounded-3 shadow-sm d-inline-block">
+                                    <img src="images/cat_iron.png" style="height: 110px; width: 110px; object-fit: contain;" alt="Iron">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Shoes -->
+                    <div class="carousel-item h-100">
+                        <div class="d-flex align-items-center justify-content-between h-100 px-5" style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);">
+                            <div class="text-start col-7">
+                                <span class="badge rounded-pill bg-success px-2 mb-1" style="font-size: 0.6rem;">RESTORE</span>
+                                <h3 class="fw-bold mb-1 text-dark">Footwear Spa</h3>
+                                <p class="text-dark opacity-75 small mb-2">Deep conditioning & material restoration.</p>
+                                <a href="#services" class="btn btn-success btn-sm rounded-pill px-4 shadow" onclick="filterByCategory('Shoes', document.querySelectorAll('.category-item')[4])">Book Now <i class="fas fa-arrow-right ms-1"></i></a>
+                            </div>
+                            <div class="col-4 text-end">
+                                <div class="p-2 bg-white rounded-3 shadow-sm d-inline-block">
+                                    <img src="images/cat_shoes.png" style="height: 110px; width: 110px; object-fit: contain;" alt="Shoes">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Services Section -->
+    <section id="services" class="pt-2 pb-5 bg-darker">
+        <div class="container">
+            <h2 class="text-center mb-5">Our Services</h2>
+            
+            <ul class="nav nav-pills mb-4 justify-content-center" id="categoryTabs" role="tablist">
+                <!-- Tabs will be loaded dynamically -->
+            </ul>
+
+            <div class="tab-content" id="categoryTabContent">
+                <!-- Tab content will be loaded dynamically -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Delivery Dashboard Section -->
+    <section id="deliveryDashboard" class="py-5 d-none">
+        <div class="container">
+            <h2 class="mb-4" id="agentDashboardTitle"><i class="fas fa-truck-loading me-2"></i>Delivery Dashboard</h2>
+            <!-- Agent Stats -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-3 agent-stat-col">
+                    <div class="p-3 rounded-3 bg-glass border border-warning h-100">
+                        <small class="text-secondary text-uppercase fw-bold" style="font-size: 0.7rem;">Completed Tasks</small>
+                        <div class="h3 fw-bold mb-0" id="agentCompletedTasks">0</div>
+                    </div>
+                </div>
+                <div class="col-md-3 agent-stat-col">
+                    <div class="p-3 rounded-3 bg-glass border border-success h-100">
+                        <small class="text-secondary text-uppercase fw-bold" style="font-size: 0.7rem;">Today's Earning</small>
+                        <div class="h3 fw-bold mb-0" id="agentTodayEarnings">₹0</div>
+                    </div>
+                </div>
+                <div class="col-md-3 agent-stat-col">
+                    <div class="p-3 rounded-3 bg-glass border border-info h-100">
+                        <small class="text-secondary text-uppercase fw-bold" style="font-size: 0.7rem;">Main Wallet</small>
+                        <div class="h3 fw-bold mb-0" id="agentMainWallet">₹0</div>
+                    </div>
+                </div>
+                <div class="col-md-3 agent-stat-col" id="cashInHandCol">
+                    <div class="p-3 rounded-3 bg-glass border border-danger h-100">
+                        <small class="text-secondary text-uppercase fw-bold" style="font-size: 0.7rem;">Cash to Pay Admin</small>
+                        <div class="h3 fw-bold mb-0" id="agentCashInHand">₹0</div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6" id="pickupCol">
+                    <div class="p-4 rounded-4 bg-glass mb-4">
+                        <h5 class="mb-3 text-warning">Orders to Pick Up</h5>
+                        <div id="pickupOrders">
+                            <!-- Orders with 'Placed' status -->
+                        </div>
+                        <button class="btn btn-warning w-100 mt-3 fw-bold d-none" id="shareLocationBtn" onclick="toggleLocationSharing(this)">Share Live Location</button>
+                    </div>
+                </div>
+                <div class="col-md-6" id="deliveryCol">
+                    <div class="p-4 rounded-4 bg-glass mb-4">
+                        <h5 class="mb-3 text-success">Orders to Deliver</h5>
+                        <div id="deliveryOrders">
+                            <!-- Orders with 'Ready' status -->
+                        </div>
+                        <button class="btn btn-success w-100 mt-3 fw-bold d-none" id="shareLocationBtnDelivery" onclick="toggleLocationSharing(this)">Share Live Location</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Laundry Dashboard Section -->
+    <section id="laundryDashboard" class="py-5 d-none">
+        <div class="container">
+            <h2 class="mb-4"><i class="fas fa-store me-2 text-primary"></i>Laundry Shop Dashboard</h2>
+            <!-- Partner Stats -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-4">
+                    <div class="p-3 rounded-3 bg-glass border border-info h-100">
+                        <small class="text-secondary text-uppercase fw-bold" style="font-size: 0.7rem;">Total Orders</small>
+                        <div class="h3 fw-bold mb-0" id="partnerTotalOrders">0</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3 rounded-3 bg-glass border border-success h-100">
+                        <small class="text-secondary text-uppercase fw-bold" style="font-size: 0.7rem;">Today's Earning</small>
+                        <div class="h3 fw-bold mb-0" id="partnerTodayEarnings">₹0</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3 rounded-3 bg-glass border border-primary h-100">
+                        <small class="text-secondary text-uppercase fw-bold" style="font-size: 0.7rem;">Main Wallet</small>
+                        <div class="h3 fw-bold mb-0" id="partnerMainWallet">₹0</div>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 rounded-4 bg-glass border border-secondary shadow-lg">
+                <h5 class="mb-4 text-info d-flex align-items-center">
+                    <span class="spinner-grow spinner-grow-sm me-2 text-info" role="status"></span>
+                    Clothes in Processing (Washing/Ironing)
+                </h5>
+                <div id="processingOrders" class="row g-4">
+                    <!-- Orders with 'Picked Up' status -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- My Orders Section (Customer) -->
+    <section id="myOrders" class="py-5 d-none">
+        <div class="container">
+            <h2 class="mb-4 text-primary d-flex align-items-center">
+                <i class="fas fa-history me-3"></i>My Order History
+            </h2>
+            <div class="row g-4" id="orderHistoryList">
+                <!-- Orders will be loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Real-time Order Tracking Section -->
+    <section id="tracking" class="py-5 d-none bg-darker border-top border-secondary">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold"><i class="fas fa-location-crosshairs me-2 text-primary"></i>Track Your Order</h2>
+                <p class="text-secondary">Real-time status of your clothes</p>
+                <span class="badge bg-dark border border-primary text-primary px-3 py-2 rounded-pill" id="trackingOrderIdDisplay">#000000</span>
+            </div>
+
+            <div class="row justify-content-center mb-5">
+                <div class="col-lg-10">
+                    <div class="tracking-stepper position-relative d-flex justify-content-between align-items-center px-2">
+                        <div id="progress-line" class="position-absolute top-50 start-0 translate-middle-y w-100" style="height: 2px; border-top: 2px dashed #475569; z-index: 0;"></div>
+                        
+                        <div class="step-item text-center position-relative" id="step-placed" style="z-index: 1;">
+                            <div class="step-dot rounded-circle mx-auto mb-2" style="width: 20px; height: 20px; background: #475569; border: 4px solid #1e293b; transition: all 0.3s;"></div>
+                            <div class="step-text small fw-bold text-secondary">Placed</div>
+                        </div>
+                        <div class="step-item text-center position-relative" id="step-picked" style="z-index: 1;">
+                            <div class="step-dot rounded-circle mx-auto mb-2" style="width: 20px; height: 20px; background: #475569; border: 4px solid #1e293b; transition: all 0.3s;"></div>
+                            <div class="step-text small fw-bold text-secondary">Picked</div>
+                        </div>
+                        <div class="step-item text-center position-relative" id="step-arrived" style="z-index: 1;">
+                            <div class="step-dot rounded-circle mx-auto mb-2" style="width: 20px; height: 20px; background: #475569; border: 4px solid #1e293b; transition: all 0.3s;"></div>
+                            <div class="step-text small fw-bold text-secondary">In Laundry</div>
+                        </div>
+                        <div class="step-item text-center position-relative" id="step-washing" style="z-index: 1;">
+                            <div class="step-dot rounded-circle mx-auto mb-2" style="width: 20px; height: 20px; background: #475569; border: 4px solid #1e293b; transition: all 0.3s;"></div>
+                            <div class="step-text small fw-bold text-secondary">Washing</div>
+                        </div>
+                        <div class="step-item text-center position-relative" id="step-ready" style="z-index: 1;">
+                            <div class="step-dot rounded-circle mx-auto mb-2" style="width: 20px; height: 20px; background: #475569; border: 4px solid #1e293b; transition: all 0.3s;"></div>
+                            <div class="step-text small fw-bold text-secondary">Ready</div>
+                        </div>
+                        <div class="step-item text-center position-relative" id="step-dispatched" style="z-index: 1;">
+                            <div class="step-dot rounded-circle mx-auto mb-2" style="width: 20px; height: 20px; background: #475569; border: 4px solid #1e293b; transition: all 0.3s;"></div>
+                            <div class="step-text small fw-bold text-secondary">Out for Delivery</div>
+                        </div>
+                        <div class="step-item text-center position-relative" id="step-delivered" style="z-index: 1;">
+                            <div class="step-dot rounded-circle mx-auto mb-2" style="width: 20px; height: 20px; background: #475569; border: 4px solid #1e293b; transition: all 0.3s;"></div>
+                            <div class="step-text small fw-bold text-secondary">Delivered</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <div id="trackingMap" class="rounded-4 border border-secondary shadow-lg overflow-hidden" style="height: 400px; background: #1e293b;">
+                        <div class="d-flex align-items-center justify-content-center h-100 text-secondary" id="mapOverlay">
+                            <div class="text-center">
+                                <i class="fas fa-map-marked-alt fa-3x mb-3"></i>
+                                <p>Map will load when agent is active</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="p-4 rounded-4 bg-glass border border-secondary h-100 shadow-lg">
+                        <h5 class="mb-4 d-flex align-items-center"><i class="fas fa-info-circle me-2 text-info"></i>Delivery Info</h5>
+                        <div class="mb-3">
+                            <small class="text-secondary text-uppercase fw-bold" style="font-size: 0.65rem;">Assigned Agent</small>
+                            <div class="d-flex align-items-center mt-1">
+                                <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                    <i class="fas fa-user-tie text-white"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="fw-bold" id="agentNameDisplay">Awaiting Assignment</div>
+                                    <div class="small text-secondary" id="agentRoleDisplay">CleanKart Professional</div>
+                                </div>
+                                <div id="agentContactArea" class="d-none">
+                                    <a href="#" id="agentCallBtn" class="btn btn-sm btn-success rounded-circle"><i class="fas fa-phone"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                        <hr class="border-secondary my-3">
+                        <div class="p-3 rounded-3 bg-dark border-start border-info border-3" id="deliveryStatusBox">
+                            <p class="small mb-0 text-info fw-bold" id="deliveryStatusMsg">Finding best agent for you...</p>
+                        </div>
+                        <div class="alert alert-primary bg-dark border-primary py-2 small mt-3 mb-0">
+                            <i class="fas fa-shield-halved me-2"></i>Contact support if you face any issues.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="py-5 bg-darker">
+        <div class="container text-center">
+            <h2 class="display-6 fw-bold mb-5">How It <span class="text-primary">Works</span></h2>
+            <div class="row g-4">
+                <div class="col-md-3">
+                    <div class="p-4 rounded-4 bg-glass border border-secondary h-100">
+                        <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 70px; height: 70px;">
+                            <i class="fas fa-mobile-screen-button fs-3 text-white"></i>
+                        </div>
+                        <h5 class="fw-bold">Book Online</h5>
+                        <p class="small text-secondary">Select your items and schedule a pickup time.</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="p-4 rounded-4 bg-glass border border-secondary h-100">
+                        <div class="bg-info rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 70px; height: 70px;">
+                            <i class="fas fa-truck-pickup fs-3 text-white"></i>
+                        </div>
+                        <h5 class="fw-bold">Pickup</h5>
+                        <p class="small text-secondary">Our agent picks up your clothes from your doorstep.</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="p-4 rounded-4 bg-glass border border-secondary h-100">
+                        <div class="bg-warning rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 70px; height: 70px;">
+                            <i class="fas fa-soap fs-3 text-white"></i>
+                        </div>
+                        <h5 class="fw-bold">Premium Wash</h5>
+                        <p class="small text-secondary">Expert partners clean your clothes with care.</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="p-4 rounded-4 bg-glass border border-secondary h-100">
+                        <div class="bg-success rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 70px; height: 70px;">
+                            <i class="fas fa-truck-fast fs-3 text-white"></i>
+                        </div>
+                        <h5 class="fw-bold">Fast Delivery</h5>
+                        <p class="small text-secondary">Freshly cleaned clothes delivered in 24-48 hours.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Choose Us Section -->
+    <section id="why-us" class="py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="display-6 fw-bold">Why Choose <span class="text-primary">CleanKart?</span></h2>
+                <p class="text-secondary">We provide the best laundry experience in the city.</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="p-4 rounded-4 border-start border-primary border-4 bg-glass shadow-sm h-100">
+                        <i class="fas fa-wallet text-primary fs-3 mb-3"></i>
+                        <h5 class="fw-bold">Transparent Pricing</h5>
+                        <p class="small text-secondary">No hidden charges. You pay exactly what you see in the app.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-4 rounded-4 border-start border-info border-4 bg-glass shadow-sm h-100">
+                        <i class="fas fa-user-shield text-info fs-3 mb-3"></i>
+                        <h5 class="fw-bold">Secure Handling</h5>
+                        <p class="small text-secondary">Each item is tagged and tracked from pickup to delivery.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-4 rounded-4 border-start border-success border-4 bg-glass shadow-sm h-100">
+                        <i class="fas fa-leaf text-success fs-3 mb-3"></i>
+                        <h5 class="fw-bold">Hygienic Process</h5>
+                        <p class="small text-secondary">We use separate machines for every order. No mixed loads.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section id="faq" class="py-5 bg-darker border-top border-secondary">
+        <div class="container">
+            <h2 class="text-center fw-bold mb-5">Frequently Asked <span class="text-primary">Questions</span></h2>
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="accordion accordion-flush" id="laundryFaq">
+                        <div class="accordion-item bg-transparent border-secondary">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed bg-transparent text-white shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                    How much time does it take?
+                                </button>
+                            </h2>
+                            <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#laundryFaq">
+                                <div class="accordion-body text-secondary small">
+                                    Standard delivery takes 24-48 hours. Express delivery is available for specific items.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item bg-transparent border-secondary">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed bg-transparent text-white shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                    Is there a minimum order value?
+                                </button>
+                            </h2>
+                            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#laundryFaq">
+                                <div class="accordion-body text-secondary small">
+                                    No minimum order value! However, a flat ₹20 delivery fee applies to all orders to support our pickup and delivery agents.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Admin Dashboard Section -->
+    <section id="adminDashboard" class="py-5 d-none">
+        <div class="container">
+            <h2 class="mb-4 text-danger text-center"><i class="fas fa-user-shield me-2"></i>Admin Control Center</h2>
+            <!-- Stats Row -->
+            <div class="row g-4 mb-5">
+                <div class="col-md-3">
+                    <div class="p-4 rounded-4 bg-glass border border-primary text-center">
+                        <h2 id="totalOrdersCount">0</h2>
+                        <p class="text-secondary mb-0">Total Orders</p>
+                        <small class="opacity-0 d-block">&nbsp;</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="p-4 rounded-4 bg-glass border border-success text-center">
+                        <h2 id="totalRevenue">₹0</h2>
+                        <p class="text-secondary mb-0">Total Revenue</p>
+                        <small class="opacity-0 d-block">&nbsp;</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="p-4 rounded-4 bg-glass border border-warning text-center">
+                        <h2 id="pendingAppsCount">0</h2>
+                        <p class="text-secondary mb-0">Pending Partners</p>
+                        <small class="opacity-0 d-block">&nbsp;</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="p-4 rounded-4 bg-glass border border-info text-center">
+                        <h2 id="activePartnersCount">0</h2>
+                        <p class="text-secondary mb-0">Active Partners</p>
+                        <small class="text-info" id="totalFleetCount">Total Fleet: 0</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customer Support Desk: Order Live Finder -->
+            <div class="p-4 rounded-4 bg-glass border border-info mb-5 shadow-lg">
+                <h5 class="mb-3 text-info d-flex align-items-center">
+                    <i class="fas fa-headset me-2 text-info"></i>Customer Support Desk: Order Live Finder
+                </h5>
+                <p class="text-secondary small mb-4">Search by Order ID or Bill Number to instantly locate laundry status and assigned fleet partners.</p>
+                <div class="row g-3 align-items-center mb-4">
+                    <div class="col-md-9">
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary text-info"><i class="fas fa-search"></i></span>
+                            <input type="text" id="supportOrderSearchInput" class="form-control form-control-lg bg-dark text-white border-secondary" placeholder="Enter Order ID or Last 6 Digits of Bill Number (e.g. 5F12D3)..." autocomplete="off" spellcheck="false">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="button" class="btn btn-info btn-lg w-100 fw-bold text-dark" onclick="trackSupportOrder()"><i class="fas fa-magnifying-glass me-2"></i>Find Order</button>
+                    </div>
+                </div>
+                
+                <!-- Support Live Result Area -->
+                <div id="supportTrackResult" class="d-none">
+                    <!-- Dynamic details will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Sales Report Section -->
+            <div class="p-4 rounded-4 bg-glass border border-secondary mb-5 shadow-lg">
+                <h5 class="mb-4 text-primary d-flex align-items-center">
+                    <i class="fas fa-chart-line me-2"></i>Business Analytics & Sales
+                </h5>
+                <div class="row g-4">
+
+                    <div class="col-lg-12">
+                        <div class="table-responsive">
+                            <table class="table table-dark table-hover">
+                                <thead class="sticky-top bg-dark">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Orders</th>
+                                        <th>Revenue</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="salesReportTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 rounded-4 bg-glass border border-secondary shadow-lg">
+                <h5 class="mb-4 d-flex align-items-center">
+                    <i class="fas fa-id-card-clip me-2 text-warning"></i>
+                    Partner Applications Management
+                </h5>
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover align-middle">
+                        <thead class="text-secondary border-secondary">
+                            <tr>
+                                <th>Name / Contact</th>
+                                <th>Role</th>
+                                <th>Area & Address</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pendingPartnersTable">
+                            <!-- Pending partners will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Active Partners List -->
+            <div class="mt-5 p-4 rounded-4 bg-glass border border-success shadow-lg">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="text-success d-flex align-items-center mb-0">
+                        <i class="fas fa-users-gear me-2"></i>Active Partners Fleet
+                    </h5>
+                    <div class="input-group input-group-sm" style="width: 300px;">
+                        <input type="text" id="adminPartnerSearch" class="form-control bg-dark text-white border-secondary" placeholder="Search partners..." onkeyup="filterPartners()" autocomplete="off" value="" spellcheck="false">
+                        <span class="input-group-text bg-dark border-secondary text-secondary"><i class="fas fa-search"></i></span>
+                    </div>
+                </div>
+                
+                <!-- Nav Tabs -->
+                <ul class="nav nav-tabs mb-4 border-secondary" id="partnerTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active text-white" id="pickup-tab" data-bs-toggle="tab" data-bs-target="#pickup-pane" type="button" role="tab">Pickup Agents</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link text-white" id="delivery-tab" data-bs-toggle="tab" data-bs-target="#delivery-pane" type="button" role="tab">Delivery Agents</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link text-white" id="laundry-tab" data-bs-toggle="tab" data-bs-target="#laundry-pane" type="button" role="tab">Laundry Partners</button>
+                    </li>
+                </ul>
+                
+                <!-- Tab Content -->
+                <div class="tab-content" id="partnerTabContent">
+                    <!-- Pickup Agents Pane -->
+                    <div class="tab-pane fade show active" id="pickup-pane" role="tabpanel" aria-labelledby="pickup-tab">
+                        <div class="table-responsive">
+                            <table class="table table-dark table-hover align-middle">
+                                <thead class="text-secondary border-secondary">
+                                    <tr>
+                                        <th>Name / Contact</th>
+                                        <th>Area</th>
+                                        <th>Today's Earning</th>
+                                        <th>Main Wallet</th>
+                                        <th>Orders Done</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="pickupAgentsTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Delivery Agents Pane -->
+                    <div class="tab-pane fade" id="delivery-pane" role="tabpanel" aria-labelledby="delivery-tab">
+                        <div class="table-responsive">
+                            <table class="table table-dark table-hover align-middle">
+                                <thead class="text-secondary border-secondary">
+                                    <tr>
+                                        <th>Name / Contact</th>
+                                        <th>Area</th>
+                                        <th>Today's Earning</th>
+                                        <th>Main Wallet</th>
+                                        <th>Cash to Pay Admin</th>
+                                        <th>Orders Done</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="deliveryAgentsTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Laundry Partners Pane -->
+                    <div class="tab-pane fade" id="laundry-pane" role="tabpanel" aria-labelledby="laundry-tab">
+                        <div class="table-responsive">
+                            <table class="table table-dark table-hover align-middle">
+                                <thead class="text-secondary border-secondary">
+                                    <tr>
+                                        <th>Name / Contact</th>
+                                        <th>Address</th>
+                                        <th>Today's Earning</th>
+                                        <th>Main Wallet</th>
+                                        <th>Orders Done</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="laundryPartnersTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-5 p-4 rounded-4 bg-glass border border-danger shadow-lg">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="text-danger d-flex align-items-center mb-0">
+                        <i class="fas fa-list-check me-2"></i>Master Order Control
+                    </h5>
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="input-group input-group-sm" style="width: 250px;">
+                            <input type="text" id="adminOrderSearch" class="form-control bg-dark text-white border-secondary" placeholder="Search ID, Name..." onkeyup="filterOrders()" autocomplete="off" value="" spellcheck="false">
+                            <span class="input-group-text bg-dark border-secondary text-secondary"><i class="fas fa-search"></i></span>
+                        </div>
+                        <button class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="exportOrdersCSV()">
+                            <i class="fas fa-file-csv me-2"></i>Download Sales Report
+                        </button>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover align-middle">
+                        <thead class="text-secondary border-secondary">
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Amount</th>
+                                <th>Pincode</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminOrdersTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Registered Customers Management -->
+            <div class="mt-5 p-4 rounded-4 bg-glass border border-primary shadow-lg">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="text-primary d-flex align-items-center mb-0">
+                        <i class="fas fa-user-group me-2"></i>Registered Customers
+                    </h5>
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="input-group input-group-sm" style="width: 250px;">
+                            <input type="text" id="adminCustomerSearch" class="form-control bg-dark text-white border-secondary" placeholder="Search name or number..." onkeyup="filterCustomers()" autocomplete="off" value="" spellcheck="false">
+                            <span class="input-group-text bg-dark border-secondary text-secondary"><i class="fas fa-search"></i></span>
+                        </div>
+                        <div class="badge bg-primary rounded-pill px-3 py-2" id="customerCountBadge">0 Total Users</div>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover align-middle">
+                        <thead class="text-secondary border-secondary">
+                            <tr>
+                                <th>Name / Email</th>
+                                <th>Phone Number</th>
+                                <th>Recent Address</th>
+                                <th>Total Orders</th>
+                                <th>Joined Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminCustomersTable">
+                            <!-- Customers will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="mt-5 p-4 rounded-4 bg-glass border border-info shadow-lg">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="text-info d-flex align-items-center mb-0">
+                        <i class="fas fa-tags me-2"></i>Services Management
+                    </h5>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-outline-info rounded-pill px-3 fw-bold" data-bs-toggle="modal" data-bs-target="#categoryModal">
+                            <i class="fas fa-folder-plus me-2"></i>Add Category
+                        </button>
+                        <button class="btn btn-sm btn-info rounded-pill px-3 fw-bold text-dark" data-bs-toggle="modal" data-bs-target="#serviceModal" onclick="prepareServiceForm()">
+                            <i class="fas fa-plus me-2"></i>Add New Service
+                        </button>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover align-middle">
+                        <thead class="text-secondary border-secondary">
+                            <tr>
+                                <th>Name</th>
+                                <th>Category</th>
+                                <th>Price</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminServicesTable">
+                            <!-- Services will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="mt-5 p-4 rounded-4 bg-glass border border-success shadow-lg">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="text-success d-flex align-items-center mb-0">
+                        <i class="fas fa-gift me-2"></i>Coupon Management
+                    </h5>
+                    <button class="btn btn-sm btn-success rounded-pill px-3 fw-bold" data-bs-toggle="modal" data-bs-target="#adminCouponModal" onclick="prepareCouponForm()">
+                        <i class="fas fa-plus me-2"></i>Create Coupon
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover align-middle">
+                        <thead class="text-secondary border-secondary">
+                            <tr>
+                                <th>Code</th>
+                                <th>Discount</th>
+                                <th>Min Order</th>
+                                <th>Expiry</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminCouponsTable"></tbody>
+                    </table>
+                </div>
+            </div>
+    </section>
+
+    <!-- Newsletter Section -->
+    <section id="newsletter" class="py-5">
+        <div class="container">
+            <div class="p-5 rounded-4 bg-glass border border-primary shadow-lg text-center">
+                <h3 class="fw-bold mb-3">Get <span class="text-primary">20% OFF</span> Your First Order</h3>
+                <p class="text-secondary mb-4">Subscribe to our newsletter for exclusive offers and laundry tips.</p>
+                <div class="row justify-content-center">
+                    <div class="col-md-6">
+                        <form class="d-flex flex-column flex-md-row gap-2" onsubmit="event.preventDefault(); notifyUser('Thank you for subscribing!', 'success')">
+                            <input type="email" class="form-control bg-dark text-white border-secondary" placeholder="Enter your email" required>
+                            <button type="submit" class="btn btn-primary px-4 fw-bold w-100 w-md-auto">Subscribe</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="mainFooter" class="py-5 mt-5" style="background: linear-gradient(180deg, #0f172a 0%, #000000 100%); border-top: 1px solid #334155;">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-4 text-md-start text-center mb-4 mb-md-0">
+                    <h5 class="text-primary fw-bold mb-3"><i class="fas fa-hanger me-2"></i>CleanKart</h5>
+                    <p class="text-secondary small">India's most trusted laundry marketplace. Quality care for your clothes, delivered with love.</p>
+                </div>
+                
+                <div class="col-md-4 mb-4 mb-md-0 d-flex justify-content-center">
+                    <fieldset class="footer-support border border-secondary rounded-3 p-2 position-relative" style="width: fit-content; min-width: 200px;">
+                        <legend class="float-none w-auto px-2 text-info fw-bold" style="font-size: 0.7rem; background: #0f172a; margin-left: 10px; margin-top: -20px; letter-spacing: 1px;">SUPPORT</legend>
+                        <div class="d-flex justify-content-center gap-4 py-2 px-3">
+                            <a href="https://wa.me/919548706353" target="_blank" class="text-success" title="WhatsApp"><i class="fab fa-whatsapp fa-2x"></i></a>
+                            <a href="tel:+919548706353" class="text-primary" title="Call Us"><i class="fas fa-phone-alt fa-2x"></i></a>
+                            <a href="mailto:saurabhkumar95487063@gmail.com" class="text-info" title="Email"><i class="fas fa-envelope fa-2x"></i></a>
+                        </div>
+                    </fieldset>
+                </div>
+
+                <div class="col-md-4 text-md-end text-center">
+                    <div class="d-flex flex-column gap-2 align-items-md-end align-items-center">
+                        <button class="btn btn-outline-warning btn-sm rounded-pill px-3 w-75" data-bs-toggle="modal" data-bs-target="#partnerModal" onclick="setPartnerRole('pickup_agent')">
+                            <i class="fas fa-truck-pickup me-2"></i>Pickup Partner
+                        </button>
+                        <button class="btn btn-outline-success btn-sm rounded-pill px-3 w-75" data-bs-toggle="modal" data-bs-target="#partnerModal" onclick="setPartnerRole('delivery_agent')">
+                            <i class="fas fa-truck me-2"></i>Delivery Partner
+                        </button>
+                        <button class="btn btn-outline-info btn-sm rounded-pill px-3 w-75" data-bs-toggle="modal" data-bs-target="#partnerModal" onclick="setPartnerRole('laundry_partner')">
+                            <i class="fas fa-store me-2"></i>Laundry Partner
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="border-top border-secondary mt-5 pt-3">
+                <div class="row align-items-center">
+                    <div class="col-md-6 text-md-start text-center">
+                        <p class="text-secondary x-small mb-0">© 2026 CleanKart. All rights reserved.</p>
+                    </div>
+                    <div class="col-md-6 text-md-end text-center mt-2 mt-md-0">
+                        <a href="#" class="text-secondary x-small text-decoration-none me-3" data-bs-toggle="modal" data-bs-target="#privacyModal">Privacy Policy</a>
+                        <a href="#" class="text-secondary x-small text-decoration-none me-3" data-bs-toggle="modal" data-bs-target="#termsModal">Terms of Service</a>
+                        <a href="#" class="text-secondary x-small text-decoration-none" data-bs-toggle="modal" data-bs-target="#refundModal">Refund Policy</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Partner Registration Modal -->
+    <div class="modal fade" id="partnerModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-dark text-white border-secondary">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title" id="partnerTitle">Apply as Partner</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="partnerForm">
+                        <input type="hidden" id="partnerRole">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-white">Full Name</label>
+                            <input type="text" class="form-control bg-dark text-white border-secondary" placeholder="e.g. Aman Sharma" id="partnerName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-white">Email Address</label>
+                            <input type="email" class="form-control bg-dark text-white border-secondary" placeholder="e.g. aman@example.com" id="partnerEmail" spellcheck="false" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-white">Phone Number</label>
+                            <input type="text" class="form-control bg-dark text-white border-secondary" placeholder="10-digit number" id="partnerPhone" maxlength="10" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-white">Service Area (Pincode)</label>
+                            <input type="text" class="form-control bg-dark text-white border-secondary" placeholder="e.g. 110001" id="partnerPincode" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-white">Shop / Home Address</label>
+                            <textarea class="form-control bg-dark text-white border-secondary" placeholder="Detailed address for verification..." id="partnerAddress" rows="2" required></textarea>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-white">Create Password</label>
+                            <div class="password-container">
+                                <input type="password" class="form-control bg-dark text-white border-secondary" placeholder="Min 6 characters" id="partnerPassword" required>
+                                <i class="fas fa-eye toggle-password" onclick="togglePassword('partnerPassword', this)"></i>
+                            </div>
+                        </div>
+                        <div class="p-3 rounded-3 bg-glass border border-secondary mb-4">
+                            <h6 class="text-info mb-3"><i class="fas fa-wallet me-2"></i>Settlement Details (For Payments)</h6>
+                            <div class="mb-3">
+                                <label class="small text-secondary mb-1">UPI ID</label>
+                                <input type="text" class="form-control bg-dark text-white border-secondary" placeholder="example@upi" id="partnerUpi">
+                            </div>
+                            <div class="row g-2">
+                                <div class="col-md-12 mb-2">
+                                    <label class="small text-secondary mb-1">Bank Account Number</label>
+                                    <input type="text" class="form-control bg-dark text-white border-secondary" placeholder="Account Number" id="partnerAccount">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="small text-secondary mb-1">Bank Name</label>
+                                    <input type="text" class="form-control bg-dark text-white border-secondary" placeholder="Bank Name" id="partnerBankName">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="small text-secondary mb-1">IFSC Code</label>
+                                    <input type="text" class="form-control bg-dark text-white border-secondary" placeholder="IFSC" id="partnerIfsc">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-white">Upload KYC Document (Aadhar/Shop Photo)</label>
+                            <input class="form-control bg-dark text-white border-secondary" type="file" id="partnerKyc" accept="image/*,.pdf" required>
+                            <small class="text-secondary">Max file size: 5MB (JPG, PNG, PDF)</small>
+                        </div>
+                        <div class="alert alert-info py-2 small">
+                            <i class="fas fa-info-circle me-2"></i>Your application will be reviewed by our team.
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 py-2">Submit Application</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cart Sidebar (Offcanvas) -->
+    <div class="offcanvas offcanvas-end bg-dark text-white border-start border-secondary" tabindex="-1" id="cartSidebar">
+        <div class="offcanvas-header border-bottom border-secondary">
+            <h5 class="offcanvas-title"><i class="fas fa-shopping-cart me-2"></i>Your Cart</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body">
+            <div id="sidebarCartItems">
+                <!-- Items go here -->
+            </div>
+            <div id="emptyCartMsg" class="text-center text-secondary py-5">
+                <i class="fas fa-shopping-basket fa-3x mb-3"></i>
+                <p>Your cart is empty</p>
+            </div>
+        </div>
+        <div class="p-4 border-top border-secondary">
+            <div class="d-flex justify-content-between mb-3">
+                <span>Total Amount:</span>
+                <span class="fw-bold fs-5 text-primary" id="sidebarTotal">₹0</span>
+            </div>
+            <button class="btn btn-primary w-100 py-3 fw-bold" onclick="openCheckout()">Proceed to Checkout</button>
+        </div>
+    </div>
+
+    <!-- Floating Cart Button -->
+    <button class="btn btn-primary rounded-circle shadow-lg d-none" id="cartFAB" style="position: fixed; bottom: 30px; right: 30px; width: 70px; height: 70px; z-index: 1050; transition: all 0.3s ease;" data-bs-toggle="offcanvas" data-bs-target="#cartSidebar">
+        <div class="position-relative">
+            <i class="fas fa-shopping-cart fa-lg"></i>
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cartBadge">0</span>
+        </div>
+    </button>
+
+    <!-- Login Modal -->
+    <div class="modal fade" id="loginModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-dark text-white border-secondary">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title">Login</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="loginForm">
+                        <div id="loginErrorAlert" class="alert alert-danger d-none py-2 px-3 mb-3 rounded-3 text-start small align-items-center" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171;">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            <span id="loginErrorMsg"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email or Phone Number</label>
+                            <input type="text" class="form-control bg-dark text-white border-secondary py-2" id="loginEmail" placeholder="Enter your email or phone" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Password</label>
+                            <div class="password-container">
+                                <input type="password" class="form-control bg-dark text-white border-secondary" id="loginPassword" autocomplete="off" spellcheck="false" required>
+                                <i class="fa-solid fa-eye toggle-password"></i>
+                            </div>
+                            <div class="text-end mt-2">
+                                <a href="javascript:void(0)" onclick="openForgotModal()" class="small text-info text-decoration-none">Forgot Password?</a>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 py-2">Login</button>
+                        <div class="text-center mt-3 small text-secondary">
+                            Don't have an account? <a href="javascript:void(0)" onclick="bootstrap.Modal.getInstance(document.getElementById('loginModal')).hide(); setTimeout(() => { new bootstrap.Modal(document.getElementById('signupModal')).show(); }, 350);" class="text-primary text-decoration-none fw-semibold">Sign Up</a>
+                        </div>
+                    </form>
+
+                    <!-- Premium PWA Install Banner -->
+                    <div id="pwaInstallBannerLogin" class="mt-4 p-3 rounded-3 text-start d-none" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(99, 102, 241, 0.12)); border: 1px dashed rgba(59, 130, 246, 0.3);">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="mb-0 text-white" style="font-size: 0.9rem;"><i class="fa-solid fa-wand-magic-sparkles text-info me-2"></i>Install CleanKart App</h6>
+                                <small class="text-secondary" style="font-size: 0.75rem;">Instant access on your home screen!</small>
+                            </div>
+                            <button type="button" id="pwaInstallBtnLogin" class="btn btn-primary btn-sm px-3 rounded-pill fw-semibold" style="font-size: 0.8rem;">Install</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Signup Modal -->
+    <div class="modal fade" id="signupModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-dark text-white border-secondary">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title">Sign Up</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="signupForm">
+                        <div id="signupErrorAlert" class="alert alert-danger d-none py-2 px-3 mb-3 rounded-3 text-start small align-items-center" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171;">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            <span id="signupErrorMsg"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" class="form-control bg-dark text-white border-secondary" id="signupName" placeholder="e.g. Rahul Kumar" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control bg-dark text-white border-secondary py-2" id="signupEmail" placeholder="rahul@example.com" spellcheck="false" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Phone Number</label>
+                            <input type="text" class="form-control bg-dark text-white border-secondary" id="signupPhone" placeholder="10-digit number" maxlength="10" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Create Password</label>
+                            <div class="password-container">
+                                <input type="password" class="form-control bg-dark text-white border-secondary" id="signupPassword" placeholder="Min 6 characters" required>
+                                <i class="fa-solid fa-eye toggle-password"></i>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 py-2">Send OTP</button>
+                        <div class="text-center mt-3 small text-secondary">
+                            Already have an account? <a href="javascript:void(0)" onclick="bootstrap.Modal.getInstance(document.getElementById('signupModal')).hide(); setTimeout(() => { new bootstrap.Modal(document.getElementById('loginModal')).show(); }, 350);" class="text-primary text-decoration-none fw-semibold">Login</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Signup OTP Modal -->
+    <div class="modal fade" id="signupOtpModal" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-dark text-white border-secondary">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title">Verify Phone</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4 text-center">
+                    <p class="text-secondary small mb-4">We've sent a 4-digit OTP to your phone and email. Please enter it below to verify your account.</p>
+                    <form id="signupOtpForm">
+                        <div id="signupOtpErrorAlert" class="alert alert-danger d-none py-2 px-3 mb-3 rounded-3 text-start small align-items-center" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171;">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            <span id="signupOtpErrorMsg"></span>
+                        </div>
+                        <div class="mb-4">
+                            <input type="text" class="form-control bg-dark text-white border-secondary text-center fs-2 fw-bold" id="signupOtp" maxlength="4" placeholder="0000" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">Verify & Create Account</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rating Modal -->
+    <div class="modal fade" id="ratingModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-glass border-secondary">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title text-primary"><i class="fas fa-star text-warning me-2"></i>Rate Your Experience</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center py-4">
+                    <input type="hidden" id="ratingOrderId">
+                    <input type="hidden" id="ratingValue" value="5">
+                    
+                    <h6 class="text-light mb-3">How was our service?</h6>
+                    <div id="ratingStars" class="h1 text-warning mb-4 d-flex justify-content-center gap-2">
+                        <i class="fas fa-star cursor-pointer" onclick="setRating(1)"></i>
+                        <i class="fas fa-star cursor-pointer" onclick="setRating(2)"></i>
+                        <i class="fas fa-star cursor-pointer" onclick="setRating(3)"></i>
+                        <i class="fas fa-star cursor-pointer" onclick="setRating(4)"></i>
+                        <i class="fas fa-star cursor-pointer" onclick="setRating(5)"></i>
+                    </div>
+                    
+                    <div class="form-group text-start">
+                        <label class="form-label text-secondary small">Write a Review (Optional)</label>
+                        <textarea class="form-control bg-dark text-light border-secondary" id="reviewText" rows="3" placeholder="Tell us what you liked..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary fw-bold" onclick="submitRating()">Submit Feedback</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Checkout Modal -->
+    <div class="modal fade" id="checkoutModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content bg-dark text-white border-secondary">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title">Complete Your Order</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <!-- Progress Stepper -->
+                    <div class="checkout-stepper bg-darker p-3 border-bottom border-secondary d-flex justify-content-around">
+                        <div class="step-item active" id="step1-indicator">
+                            <div class="step-number">1</div>
+                            <div class="step-label">Address</div>
+                        </div>
+                        <div class="step-item" id="step2-indicator">
+                            <div class="step-number">2</div>
+                            <div class="step-label">Payment</div>
+                        </div>
+                        <div class="step-item" id="step3-indicator">
+                            <div class="step-number">3</div>
+                            <div class="step-label">Confirm</div>
+                        </div>
+                    </div>
+
+                    <div class="p-4">
+                        <!-- Step 1: Address -->
+                        <div id="checkout-step-1">
+                            <h6 class="mb-3 text-primary"><i class="fas fa-map-marker-alt me-2"></i>Delivery Details</h6>
+                            <form id="addressForm">
+                                <div class="mb-3 d-none" id="savedAddressesArea">
+                                    <label class="small text-info mb-1 fw-bold">Select Saved Address</label>
+                                    <select class="form-select bg-dark text-white border-info mb-2" id="savedAddressesSelect" onchange="useSavedAddress(this.value)">
+                                        <option value="">-- Choose a saved address --</option>
+                                    </select>
+                                </div>
+                                <div class="row g-2">
+                                    <div class="col-12 mb-2">
+                                        <label class="small text-secondary mb-1">Full Name</label>
+                                        <input type="text" class="form-control bg-dark text-white border-secondary" placeholder="e.g. Rahul Kumar" id="addrName" required>
+                                    </div>
+                                    <div class="col-md-6 mb-2">
+                                        <label class="small text-secondary mb-1">Mobile Number</label>
+                                        <input type="text" class="form-control bg-dark text-white border-secondary" placeholder="e.g. 9876543210" id="addrMobile" required>
+                                    </div>
+                                    <div class="col-md-6 mb-2">
+                                        <label class="small text-secondary mb-1">Pincode</label>
+                                        <input type="text" class="form-control bg-dark text-white border-secondary" placeholder="e.g. 110001" id="addrPincode" required>
+                                    </div>
+                                    <div class="col-12 mb-3">
+                                        <label class="small text-secondary mb-1">Complete Address</label>
+                                        <textarea class="form-control bg-dark text-white border-secondary" placeholder="House No, Street, Landmark..." id="addrLine" rows="2" required></textarea>
+                                    </div>
+                                    <div class="col-12 mb-3">
+                                        <label class="small text-info mb-1 fw-bold"><i class="fas fa-camera me-1"></i> Upload Garment Pictures (Max 25)</label>
+                                        <input class="form-control bg-dark text-white border-info" type="file" id="garmentPics" accept="image/*" multiple onchange="previewGarmentPics()">
+                                        <small class="text-secondary" style="font-size: 0.75rem;">Snap or upload pictures of your clothes (up to 25) to print them directly on the bill.</small>
+                                        <div id="garmentPicsPreview" class="d-flex flex-wrap gap-2 mt-2"></div>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-primary w-100 py-3 fw-bold" onclick="goToStep(2)">Proceed to Payment <i class="fas fa-arrow-right ms-2"></i></button>
+                            </form>
+                        </div>
+
+                        <!-- Step 2: Payment & Summary -->
+                        <div id="checkout-step-2" class="d-none">
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <h6 class="text-primary mb-3"><i class="fas fa-wallet me-2"></i>Payment Method</h6>
+                                    <div class="payment-options">
+                                        <div class="form-check payment-card mb-2 p-3 rounded-3 border border-secondary" onclick="document.getElementById('payCOD').click()">
+                                            <input class="form-check-input" type="radio" name="payment" id="payCOD" checked onclick="togglePaymentView('cod')">
+                                            <label class="form-check-label fw-bold" for="payCOD">
+                                                Cash on Delivery
+                                                <div class="small text-secondary fw-normal">Pay after cleaning</div>
+                                            </label>
+                                        </div>
+                                        <div class="form-check payment-card mb-3 p-3 rounded-3 border border-secondary" onclick="document.getElementById('payOnline').click()">
+                                            <input class="form-check-input" type="radio" name="payment" id="payOnline" onclick="togglePaymentView('online')">
+                                            <label class="form-check-label fw-bold" for="payOnline">
+                                                Online Payment
+                                                <div class="small text-secondary fw-normal">UPI, Cards, Netbanking</div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div id="onlinePaymentArea" class="d-none">
+                                        <div class="p-3 rounded-3 bg-dark border border-info text-center">
+                                            <img src="images/qr.png" alt="UPI QR" class="img-fluid mb-2" style="max-width: 150px;">
+                                            <p class="small mb-0">Scan & Pay to <strong class="text-info">cleankart@upi</strong></p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-primary mb-3"><i class="fas fa-file-invoice-dollar me-2"></i>Order Summary</h6>
+                                    <div id="checkoutItems" class="mb-3" style="max-height: 150px; overflow-y: auto;"></div>
+                                    
+                                    <!-- Coupon Section Restore -->
+                                    <div class="mb-3">
+                                        <div class="input-group input-group-sm">
+                                            <input type="text" class="form-control bg-dark text-white border-secondary" id="couponCode" placeholder="Enter Coupon (e.g. SAVE20)">
+                                            <button class="btn btn-outline-info" type="button" onclick="applyCoupon()">Apply</button>
+                                        </div>
+                                        <div id="couponMessage" class="small mt-1"></div>
+                                    </div>
+                                    
+                                    <div class="bg-darker p-3 rounded-3 border border-secondary">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span class="small text-secondary">Subtotal:</span>
+                                            <span id="checkoutTotal">₹0</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-2 text-info">
+                                            <span class="small">Delivery Fee:</span>
+                                            <span>₹20</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-2 text-success d-none" id="discountRow">
+                                            <span class="small">Discount:</span>
+                                            <span id="checkoutDiscount">-₹0</span>
+                                        </div>
+                                        <hr class="border-secondary my-2">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold">Grand Total:</span>
+                                            <span class="h5 fw-bold text-primary mb-0" id="finalTotal">₹0</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2 mt-4">
+                                <button type="button" class="btn btn-outline-secondary px-4" onclick="goToStep(1)"><i class="fas fa-arrow-left me-2"></i> Back</button>
+                                <button type="button" class="btn btn-success flex-grow-1 py-3 fw-bold" onclick="placeOrder()">Place Order & Confirm <i class="fas fa-check-circle ms-2"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Profile Modal -->
+    <div class="modal fade" id="profileModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-dark text-white border-secondary">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title">Your Profile</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4 text-center">
+                    <div class="rounded-circle bg-primary mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 70px; height: 70px;">
+                        <i class="fas fa-user-circle fa-3x"></i>
+                    </div>
+                    <div class="badge bg-dark border border-primary text-primary px-3 py-1 rounded-pill mb-3" id="profileRole">CUSTOMER</div>
+                    
+                    <div class="text-start mt-2">
+                        <div class="mb-3">
+                            <label class="small text-secondary mb-1">Full Name</label>
+                            <input type="text" class="form-control bg-dark text-white border-secondary" id="editProfileName" placeholder="Your Name">
+                        </div>
+                        <div class="mb-3">
+                            <label class="small text-secondary mb-1">Mobile Number</label>
+                            <input type="text" class="form-control bg-dark text-white border-secondary opacity-75" id="editProfileMobile" readonly>
+                            <small class="text-muted" style="font-size: 0.65rem;">Mobile number cannot be changed.</small>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 d-grid gap-2">
+                        <button class="btn btn-primary py-2 rounded-pill fw-bold" onclick="updateProfile()">Save Changes</button>
+                        <button class="btn btn-outline-info py-2 rounded-pill fw-bold" onclick="openForgotModal()">Change Password</button>
+                        <button class="btn btn-outline-danger py-2 rounded-pill small" onclick="logout()">Logout From Device</button>
+                    </div>
+
+                    <!-- Premium PWA Install Banner -->
+                    <div id="pwaInstallBannerProfile" class="mt-4 p-3 rounded-3 text-start d-none" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(99, 102, 241, 0.12)); border: 1px dashed rgba(59, 130, 246, 0.3);">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="mb-0 text-white" style="font-size: 0.9rem;"><i class="fa-solid fa-wand-magic-sparkles text-info me-2"></i>Install CleanKart App</h6>
+                                <small class="text-secondary" style="font-size: 0.75rem;">Instant access on your home screen!</small>
+                            </div>
+                            <button type="button" id="pwaInstallBtnProfile" class="btn btn-primary btn-sm px-3 rounded-pill fw-semibold" style="font-size: 0.8rem;">Install</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Modal -->
+    <div class="modal fade" id="categoryModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-dark text-white border-secondary">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title">Add New Category</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="categoryForm">
+                        <div class="mb-3">
+                            <label class="form-label">Category Name</label>
+                            <input type="text" class="form-control bg-dark text-white border-secondary" id="categoryName" placeholder="e.g. Ironing Only" required>
+                        </div>
+                        <button type="submit" class="btn btn-info w-100 text-dark fw-bold">Add Category</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Service Modal -->
+    <div class="modal fade" id="serviceModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-dark text-white border-secondary">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title" id="serviceModalTitle">Add New Service</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="serviceForm">
+                        <input type="hidden" id="serviceId">
+                        <div class="mb-3" id="serviceNameContainer">
+                            <label class="form-label">Service Name</label>
+                            <input type="text" class="form-control bg-dark text-white border-secondary" id="serviceName" placeholder="e.g. Cotton Shirt" required>
+                        </div>
+                        <div class="mb-3" id="serviceCategoryContainer">
+                            <label class="form-label">Category</label>
+                            <select class="form-select bg-dark text-white border-secondary" id="serviceCategory" required>
+                                <!-- Categories will load here -->
+                            </select>
+                        </div>
+                        <div class="mb-3" id="servicePriceContainer">
+                            <label class="form-label">Price (₹)</label>
+                            <input type="number" class="form-control bg-dark text-white border-secondary" id="servicePrice" placeholder="e.g. 15" required>
+                        </div>
+                        <div class="mb-3" id="serviceIconContainer">
+                            <label class="form-label">FontAwesome Icon Class (Fallback)</label>
+                            <input type="text" class="form-control bg-dark text-white border-secondary" id="serviceIcon" placeholder="e.g. fas fa-shirt" value="fas fa-shirt">
+                        </div>
+                        <div class="mb-3" id="serviceImageContainer">
+                            <label class="form-label">Or Upload Service Image</label>
+                            <input type="file" class="form-control bg-dark text-white border-secondary" id="serviceIconFile" accept="image/*">
+                        </div>
+                        <button type="submit" class="btn btn-info w-100 text-dark fw-bold">Save Service</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Coupon Modal -->
+    <div class="modal fade" id="adminCouponModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-dark text-white border-secondary">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title">Create New Coupon</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="adminCouponForm">
+                        <div class="mb-3">
+                            <label class="form-label">Coupon Code</label>
+                            <input type="text" class="form-control bg-dark text-white border-secondary" id="adminCouponCode" placeholder="e.g. SUMMER20" required>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label class="form-label">Type</label>
+                                <select class="form-select bg-dark text-white border-secondary" id="adminCouponType">
+                                    <option value="percent">Percentage (%)</option>
+                                    <option value="fixed">Fixed (₹)</option>
+                                </select>
+                            </div>
+                            <div class="col">
+                                <label class="form-label">Value</label>
+                                <input type="number" class="form-control bg-dark text-white border-secondary" id="adminCouponValue" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Min Order (₹)</label>
+                            <input type="number" class="form-control bg-dark text-white border-secondary" id="adminCouponMin" value="0">
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Expiry Date</label>
+                            <input type="date" class="form-control bg-dark text-white border-secondary" id="adminCouponExpiry" required>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100 fw-bold">Create Coupon</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Forgot Password Modal -->
+    <div class="modal fade" id="forgotPasswordModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-dark text-white border-secondary">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title">Reset Password</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <!-- Step 1: Request OTP -->
+                    <div id="otpRequestArea">
+                        <p class="text-secondary small mb-4">Enter your email or phone number to receive a 4-digit OTP.</p>
+                        <div id="forgotReqErrorAlert" class="alert alert-danger d-none py-2 px-3 mb-3 rounded-3 text-start small align-items-center" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171;">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            <span id="forgotReqErrorMsg"></span>
+                        </div>
+                        <div class="mb-3">
+                            <input type="text" class="form-control bg-dark text-white border-secondary" id="resetInput" placeholder="Email or Phone">
+                        </div>
+                        <button class="btn btn-primary w-100" onclick="sendResetOtp()">Send OTP</button>
+                    </div>
+
+                    <!-- Step 2: Verify OTP & Reset -->
+                    <div id="otpVerifyArea" class="d-none">
+                        <p class="text-success small mb-4">OTP sent! Please check your email/phone.</p>
+                        <div id="forgotVerifyErrorAlert" class="alert alert-danger d-none py-2 px-3 mb-3 rounded-3 text-start small align-items-center" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171;">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            <span id="forgotVerifyErrorMsg"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label class="small text-secondary mb-1">Enter 4-Digit OTP</label>
+                            <input type="text" class="form-control bg-dark text-white border-secondary text-center fs-4 fw-bold" id="resetOtp" maxlength="4">
+                        </div>
+                        <div class="mb-4">
+                            <label class="small text-secondary mb-1">New Password</label>
+                            <div class="password-container">
+                                <input type="password" class="form-control bg-dark text-white border-secondary" id="newPassword" placeholder="Min 6 characters">
+                                <i class="fa-solid fa-eye toggle-password"></i>
+                            </div>
+                        </div>
+                        <button class="btn btn-success w-100" onclick="resetPassword()">Update Password</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Privacy Policy Modal -->
+    <div class="modal fade" id="privacyModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content bg-dark text-white border-secondary">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title">Privacy Policy</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4 small text-secondary" style="max-height: 400px; overflow-y: auto;">
+                    <h6>1. Information We Collect</h6>
+                    <p>We collect information you provide directly to us, such as when you create an account, place an order, or communicate with us. This includes your name, phone number, email, and address.</p>
+                    <h6>2. How We Use Information</h6>
+                    <p>We use the information to process orders, improve our service, and communicate updates about your laundry status.</p>
+                    <h6>3. Data Security</h6>
+                    <p>We implement strict security measures to protect your data. Your payment information is processed securely through Razorpay.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Terms of Service Modal -->
+    <div class="modal fade" id="termsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content bg-dark text-white border-secondary">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title">Terms of Service</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4 small text-secondary" style="max-height: 400px; overflow-y: auto;">
+                    <h6>1. Service Usage</h6>
+                    <p>By using CleanKart, you agree to provide accurate information and follow our ordering process.</p>
+                    <h6>2. Order Cancellation</h6>
+                    <p>Orders can be cancelled within 15 minutes of placement without any charge. After pickup, cancellation is not possible.</p>
+                    <h6>3. Responsibility for Items</h6>
+                    <p>While we take maximum care, CleanKart is not responsible for color bleeding or shrinkage of clothes that are not dry-clean only.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Refund Policy Modal -->
+    <div class="modal fade" id="refundModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content bg-dark text-white border-secondary">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title">Refund Policy</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4 small text-secondary" style="max-height: 400px; overflow-y: auto;">
+                    <h6>1. Refund Eligibility</h6>
+                    <p>Refunds are applicable if an order is cancelled within the allowed time frame or if there is a verified damage during our process.</p>
+                    <h6>2. Process</h6>
+                    <p>Verified refunds will be processed back to the original payment method within 5-7 working days.</p>
+                    <h6>3. Wallet Credits</h6>
+                    <p>In some cases, we may offer refund as CleanKart Wallet credits for instant use.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Bottom Navigation (Visible on mobile screens < 992px) -->
+    <div class="mobile-bottom-nav d-lg-none" id="mobileBottomNav">
+        <button class="mobile-nav-item active" id="mobileNavHome" onclick="showSection('home'); selectMobileNavItem(this);">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+        </button>
+        <button class="mobile-nav-item" id="mobileNavCategories" onclick="showSection('home'); setTimeout(() => { document.getElementById('services').scrollIntoView({behavior: 'smooth'}); }, 100); selectMobileNavItem(this);">
+            <i class="fas fa-th-large"></i>
+            <span>Categories</span>
+        </button>
+        <button class="mobile-nav-item" id="mobileNavAccount" onclick="triggerMobileAccountAction(); selectMobileNavItem(this);">
+            <i class="fas fa-user"></i>
+            <span>Account</span>
+        </button>
+        <button class="mobile-nav-item" id="mobileNavCart" data-bs-toggle="offcanvas" data-bs-target="#cartSidebar" onclick="selectMobileNavItem(this);">
+            <i class="fas fa-shopping-cart"></i>
+            <span class="mobile-cart-badge d-none" id="mobileNavCartBadge">0</span>
+            <span>Cart</span>
+        </button>
+    </div>
+
+    <!-- Garment Photos Viewer Modal -->
+    <div class="modal fade" id="garmentPhotosModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-glass border-info text-white">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title text-info"><i class="fas fa-camera me-2 text-info"></i>Garment Snaps (Customer Uploads)</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4 text-center">
+                    <div id="garmentModalPicsGrid" class="d-flex flex-wrap justify-content-center gap-3">
+                        <!-- Loaded dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reusable Secure Handover Verification OTP Modal -->
+    <div class="modal fade" id="secureHandoverModal" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-glass border-warning text-white">
+                <div class="modal-header border-secondary">
+                    <h6 class="modal-title text-warning"><i class="fas fa-shield-halved me-2 text-warning"></i>Secure Handover Verification</h6>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="small text-secondary mb-3 text-center" id="handoverPromptMessage">Please enter the secure handover OTP to proceed.</p>
+                    
+                    <!-- Dynamic Doorstep Inspection & Pre-damage Checklist Section -->
+                    <div id="handoverInspectionSection" class="d-none mb-3 p-3 rounded-4 bg-dark border border-secondary text-start">
+                        <h6 class="text-warning small fw-bold mb-2"><i class="fas fa-search me-1"></i>DOORSTEP GARMENT CONDITION CHECKLIST</h6>
+                        <p class="x-small text-secondary mb-3">Inspect clothes physically at customer's house to avoid false damage claims later.</p>
+                        
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="inspectionTornCheck">
+                            <label class="form-check-label small text-danger fw-bold" for="inspectionTornCheck">
+                                <i class="fas fa-scissors me-1"></i> Any Pre-existing Torn / Rip?
+                            </label>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="inspectionStainedCheck">
+                            <label class="form-check-label small text-info fw-bold" for="inspectionStainedCheck">
+                                <i class="fas fa-tint me-1"></i> Any Pre-existing Major Stain?
+                            </label>
+                        </div>
+                        
+                        <label class="x-small text-secondary fw-bold">Garment Damage Inspector Notes:</label>
+                        <textarea id="inspectionNotesInput" class="form-control form-control-sm bg-dark text-white border-secondary small" rows="2" placeholder="Describe any fading, tears, holes or loose stitching..."></textarea>
+                    </div>
+
+                    <!-- Dynamic Laundry Shop Handover Inspection Section -->
+                    <div id="laundryReceiptInspectionSection" class="d-none mb-3 p-3 rounded-4 bg-dark border border-secondary text-start">
+                        <h6 class="text-info small fw-bold mb-2"><i class="fas fa-store me-1"></i>LAUNDRY INCOMING QA CHECKLIST</h6>
+                        <p class="x-small text-secondary mb-3">Inspect garments delivered by Pickup Boy. Confirm if any new damages are noted before washing.</p>
+                        
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="laundryInspectionTornCheck">
+                            <label class="form-check-label small text-danger fw-bold" for="laundryInspectionTornCheck">
+                                <i class="fas fa-scissors me-1"></i> Any New Rips or Damages?
+                            </label>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="laundryInspectionCountCheck">
+                            <label class="form-check-label small text-success fw-bold" for="laundryInspectionCountCheck">
+                                <i class="fas fa-check-double me-1"></i> Garment counts match invoice exactly?
+                            </label>
+                        </div>
+                        
+                        <label class="x-small text-secondary fw-bold">Laundry Partner Notes / Discrepancies:</label>
+                        <textarea id="laundryInspectionNotesInput" class="form-control form-control-sm bg-dark text-white border-secondary small" rows="2" placeholder="e.g. Color fading on white shirt, missing button..."></textarea>
+                    </div>
+
+                    <!-- Dynamic Delivery Agent Handover Inspection Section -->
+                    <div id="deliveryReceiptInspectionSection" class="d-none mb-3 p-3 rounded-4 bg-dark border border-secondary text-start">
+                        <h6 class="text-warning small fw-bold mb-2"><i class="fas fa-truck-ramp-box me-1"></i>DELIVERY AGENT DISPATCH QA CHECKLIST</h6>
+                        <p class="x-small text-secondary mb-3">Verify package seal and garment condition from laundry shop before taking custody.</p>
+                        
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="deliveryInspectionIntactCheck">
+                            <label class="form-check-label small text-success fw-bold" for="deliveryInspectionIntactCheck">
+                                <i class="fas fa-shield me-1"></i> Package clean, pressed, and sealed perfectly?
+                            </label>
+                        </div>
+                        
+                        <label class="x-small text-secondary fw-bold">Delivery Agent Notes / Custody Log:</label>
+                        <textarea id="deliveryInspectionNotesInput" class="form-control form-control-sm bg-dark text-white border-secondary small" rows="2" placeholder="Describe package condition, hangers, plastic wrap status..."></textarea>
+                    </div>
+
+                    <!-- Dynamic Customer Doorstep Delivery Acknowledgement Section -->
+                    <div id="customerAcknowledgementSection" class="d-none mb-3 p-3 rounded-4 bg-dark border border-success text-start">
+                        <h6 class="text-success small fw-bold mb-2"><i class="fas fa-circle-check me-1"></i>CUSTOMER DELIVERY ACKNOWLEDGEMENT</h6>
+                        <p class="x-small text-secondary mb-3">Customer doorstep review block. Certify perfect delivery to waive any post-delivery claims.</p>
+                        
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="customerAckPerfectCheck" checked>
+                            <label class="form-check-label small text-success fw-bold" for="customerAckPerfectCheck">
+                                <i class="fas fa-thumbs-up me-1"></i> Received all garments fresh, clean, and intact!
+                            </label>
+                        </div>
+                        
+                        <label class="x-small text-secondary fw-bold">Customer Remarks / Doorstep Signature Note:</label>
+                        <textarea id="customerAckNotesInput" class="form-control form-control-sm bg-dark text-white border-success small" rows="2" placeholder="e.g. Excellent washing, fresh aroma, fully satisfied!"></textarea>
+                    </div>
+
+                    <div class="text-center">
+                        <input type="text" id="handoverOtpInput" class="form-control bg-dark text-white border-warning text-center fs-3 fw-bold mb-3 mx-auto" style="max-width: 200px;" maxlength="4" placeholder="0000" autocomplete="off">
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-secondary w-50" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-sm btn-warning w-50 fw-bold text-dark" onclick="verifySecureHandover()">Verify & Confirm</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="js/main.js?v=1.3"></script>
+</body>
+</html>
