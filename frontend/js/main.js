@@ -8,7 +8,7 @@ function getSocket() {
         if (isLocal) {
             trackingSocket = io();
         } else {
-            const backendUrl = window.BACKEND_URL || 'https://YOUR-BACKEND-RENDER-URL.onrender.com';
+            const backendUrl = window.BACKEND_URL || 'https://laundry-backend-4jl7.onrender.com';
             trackingSocket = io(backendUrl);
         }
     }
