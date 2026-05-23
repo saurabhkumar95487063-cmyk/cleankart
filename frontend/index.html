@@ -906,50 +906,6 @@
             </div>
     </section>
 
-    <!-- Feedback Section -->
-    <section id="feedbackSection" class="py-5 bg-darker border-top border-secondary">
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-lg-8">
-                    <div class="p-5 rounded-4 bg-glass border border-secondary shadow-lg">
-                        <div class="text-center mb-4">
-                            <h3 class="fw-bold mb-2">We Value Your <span class="text-primary">Feedback</span></h3>
-                            <p class="text-secondary small">Help us improve our service by sharing your experience.</p>
-                        </div>
-                        <form id="feedbackForm" onsubmit="submitFeedbackForm(event)">
-                            <div class="row g-3 mb-3">
-                                <div class="col-md-6">
-                                    <label class="form-label small text-secondary">Your Name</label>
-                                    <input type="text" id="feedbackName" class="form-control bg-dark text-white border-secondary" placeholder="e.g. Rahul Kumar" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label small text-secondary">Your Email</label>
-                                    <input type="email" id="feedbackEmail" class="form-control bg-dark text-white border-secondary" placeholder="e.g. rahul@example.com" spellcheck="false" required>
-                                </div>
-                            </div>
-                            <div class="mb-3 text-center">
-                                <label class="form-label small text-secondary d-block">Your Rating</label>
-                                <div id="feedbackFormStars" class="h2 text-warning d-flex justify-content-center gap-2">
-                                    <i class="fas fa-star" style="cursor: pointer;" data-value="1" onclick="setFeedbackFormRating(1)"></i>
-                                    <i class="fas fa-star" style="cursor: pointer;" data-value="2" onclick="setFeedbackFormRating(2)"></i>
-                                    <i class="fas fa-star" style="cursor: pointer;" data-value="3" onclick="setFeedbackFormRating(3)"></i>
-                                    <i class="fas fa-star" style="cursor: pointer;" data-value="4" onclick="setFeedbackFormRating(4)"></i>
-                                    <i class="fas fa-star" style="cursor: pointer;" data-value="5" onclick="setFeedbackFormRating(5)"></i>
-                                </div>
-                                <input type="hidden" id="feedbackRatingValue" value="5">
-                            </div>
-                            <div class="mb-4">
-                                <label class="form-label small text-secondary">Write your message</label>
-                                <textarea id="feedbackMessage" class="form-control bg-dark text-white border-secondary" rows="4" placeholder="Tell us what you think about our laundry service..." required></textarea>
-                            </div>
-                            <button type="submit" class="btn btn-primary w-100 py-3 fw-bold"><i class="fas fa-paper-plane me-2"></i>Submit Feedback</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <!-- Newsletter Section -->
     <section id="newsletter" class="py-5">
         <div class="container">
@@ -961,6 +917,51 @@
                         <form class="d-flex flex-column flex-md-row gap-2" onsubmit="event.preventDefault(); notifyUser('Thank you for subscribing!', 'success')">
                             <input type="email" class="form-control bg-dark text-white border-secondary" placeholder="Enter your email" required>
                             <button type="submit" class="btn btn-primary px-4 fw-bold w-100 w-md-auto">Subscribe</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Feedback Section -->
+    <section id="feedbackSection" class="py-5">
+        <div class="container">
+            <div class="p-5 rounded-4 bg-glass border border-secondary shadow-lg">
+                <div class="text-center mb-4">
+                    <h3 class="fw-bold mb-2">We Value Your <span class="text-primary">Feedback</span></h3>
+                    <p class="text-secondary small mb-0">Help us improve our service by sharing your experience.</p>
+                </div>
+                <div class="row justify-content-center">
+                    <div class="col-lg-10">
+                        <form id="feedbackForm" onsubmit="submitFeedbackForm(event)">
+                            <div class="row g-2 mb-2">
+                                <div class="col-md-4">
+                                    <input type="text" id="feedbackName" class="form-control bg-dark text-white border-secondary" placeholder="Your Name" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <input type="email" id="feedbackEmail" class="form-control bg-dark text-white border-secondary" placeholder="Your Email" spellcheck="false" required>
+                                </div>
+                                <div class="col-md-4 d-flex align-items-center justify-content-center bg-dark rounded border border-secondary py-2">
+                                    <span class="small text-secondary me-2" style="font-size: 0.85rem; user-select: none;">Rating:</span>
+                                    <div id="feedbackFormStars" class="h4 text-warning d-flex gap-1 mb-0">
+                                        <i class="fas fa-star" style="cursor: pointer; font-size: 1.1rem;" data-value="1" onclick="setFeedbackFormRating(1)"></i>
+                                        <i class="fas fa-star" style="cursor: pointer; font-size: 1.1rem;" data-value="2" onclick="setFeedbackFormRating(2)"></i>
+                                        <i class="fas fa-star" style="cursor: pointer; font-size: 1.1rem;" data-value="3" onclick="setFeedbackFormRating(3)"></i>
+                                        <i class="fas fa-star" style="cursor: pointer; font-size: 1.1rem;" data-value="4" onclick="setFeedbackFormRating(4)"></i>
+                                        <i class="fas fa-star" style="cursor: pointer; font-size: 1.1rem;" data-value="5" onclick="setFeedbackFormRating(5)"></i>
+                                    </div>
+                                    <input type="hidden" id="feedbackRatingValue" value="5">
+                                </div>
+                            </div>
+                            <div class="row g-2">
+                                <div class="col-md-9">
+                                    <textarea id="feedbackMessage" class="form-control bg-dark text-white border-secondary" rows="1" placeholder="Write your message..." style="resize: none;" required></textarea>
+                                </div>
+                                <div class="col-md-3">
+                                    <button type="submit" class="btn btn-primary w-100 fw-bold h-100"><i class="fas fa-paper-plane me-2"></i>Submit</button>
+                                </div>
+                            </div>
                         </form>
                     </div>
                 </div>
