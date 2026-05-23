@@ -2,6 +2,7 @@ const User = require('../models/User');
 const Order = require('../models/Order');
 const Service = require('../models/Service');
 const Coupon = require('../models/Coupon');
+const Feedback = require('../models/Feedback');
 
 const getAdminStats = async (req, res) => {
     try {
@@ -284,6 +285,22 @@ module.exports = {
         try {
             await Coupon.findByIdAndDelete(req.params.id);
             res.json({ message: 'Coupon deleted' });
+        } catch (err) {
+            res.status(500).json({ message: 'Server error' });
+        }
+    },
+    getFeedbacks: async (req, res) => {
+        try {
+            const feedbacks = await Feedback.find().populate('user', 'name email').sort({ createdAt: -1 });
+            res.json(feedbacks);
+        } catch (err) {
+            res.status(500).json({ message: 'Server error' });
+        }
+    },
+    deleteFeedback: async (req, res) => {
+        try {
+            await Feedback.findByIdAndDelete(req.params.id);
+            res.json({ message: 'Feedback deleted' });
         } catch (err) {
             res.status(500).json({ message: 'Server error' });
         }

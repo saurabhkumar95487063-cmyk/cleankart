@@ -327,7 +327,7 @@ function collapseNavbar() {
 
 function showSection(sectionId) {
     collapseNavbar();
-    const landingSections = ['home', 'services', 'about-us', 'how-it-works', 'why-us', 'faq', 'newsletter'];
+    const landingSections = ['home', 'services', 'about-us', 'how-it-works', 'why-us', 'faq', 'newsletter', 'feedbackSection'];
     const dashboards = ['adminDashboard', 'laundryDashboard', 'deliveryDashboard', 'myOrders', 'tracking'];
     
     // Auth Check for protected sections
@@ -395,7 +395,7 @@ function updateAuthUI() {
     const laundryDashboard = document.getElementById('laundryDashboard');
     const adminDashboard = document.getElementById('adminDashboard');
     const myOrders = document.getElementById('myOrders');
-    const landingSections = ['home', 'services', 'about-us', 'how-it-works', 'why-us', 'faq', 'newsletter'];
+    const landingSections = ['home', 'services', 'about-us', 'how-it-works', 'why-us', 'faq', 'newsletter', 'feedbackSection'];
 
     const showLanding = (show) => {
         landingSections.forEach(id => {
@@ -473,6 +473,18 @@ function updateAuthUI() {
         if (editMobile) editMobile.value = user.phone || '';
         if (pRole) pRole.innerText = (user.role || 'customer').toUpperCase();
 
+        // Prefill Feedback Form Name & Email
+        const feedbackNameInput = document.getElementById('feedbackName');
+        const feedbackEmailInput = document.getElementById('feedbackEmail');
+        if (feedbackNameInput) {
+            feedbackNameInput.value = user.name || '';
+            feedbackNameInput.readOnly = true;
+        }
+        if (feedbackEmailInput) {
+            feedbackEmailInput.value = user.email || '';
+            feedbackEmailInput.readOnly = true;
+        }
+
         // Role-based Dashboard Logic
         if (user.role === 'admin') {
             showLanding(false);
@@ -488,6 +500,7 @@ function updateAuthUI() {
             fetchCustomers();
             fetchAdminServices();
             fetchAdminCoupons();
+            fetchAdminFeedbacks();
         } else if (user.role === 'laundry_partner') {
             showLanding(false);
             if (laundryDashboard) laundryDashboard.classList.remove('d-none');
@@ -562,6 +575,19 @@ function updateAuthUI() {
         if (laundryDashboard) laundryDashboard.classList.add('d-none');
         if (adminDashboard) adminDashboard.classList.add('d-none');
         if (myOrders) myOrders.classList.add('d-none');
+        
+        // Clear Feedback Form
+        const feedbackNameInput = document.getElementById('feedbackName');
+        const feedbackEmailInput = document.getElementById('feedbackEmail');
+        if (feedbackNameInput) {
+            feedbackNameInput.value = '';
+            feedbackNameInput.readOnly = false;
+        }
+        if (feedbackEmailInput) {
+            feedbackEmailInput.value = '';
+            feedbackEmailInput.readOnly = false;
+        }
+        
         showLanding(true);
     }
 
@@ -3974,3 +4000,148 @@ window.addEventListener('load', forceClearPincodeInput);
 // Clear it after a micro delay to ensure Chrome's late autofill trigger is fully wiped out
 setTimeout(forceClearPincodeInput, 100);
 setTimeout(forceClearPincodeInput, 500);
+
+// Feedback Form Functions
+function setFeedbackFormRating(val) {
+    document.getElementById('feedbackRatingValue').value = val;
+    const stars = document.getElementById('feedbackFormStars').children;
+    for (let i = 0; i < 5; i++) {
+        stars[i].className = i < val ? 'fas fa-star' : 'far fa-star';
+        stars[i].style.cursor = 'pointer';
+    }
+}
+
+async function submitFeedbackForm(event) {
+    event.preventDefault();
+    const name = document.getElementById('feedbackName').value;
+    const email = document.getElementById('feedbackEmail').value;
+    const rating = document.getElementById('feedbackRatingValue').value;
+    const message = document.getElementById('feedbackMessage').value;
+
+    const headers = {
+        'Content-Type': 'application/json'
+    };
+
+    // Attach Bearer token if user is logged in
+    if (user && user.token) {
+        headers['Authorization'] = `Bearer ${user.token}`;
+    }
+
+    try {
+        const res = await fetch('/api/feedback', {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify({ name, email, rating, message })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+            notifyUser('Feedback submitted successfully! Thank you.', 'success');
+            // Reset message and rating
+            document.getElementById('feedbackMessage').value = '';
+            setFeedbackFormRating(5);
+            
+            // If user is not logged in, reset name and email too
+            if (!user) {
+                document.getElementById('feedbackName').value = '';
+                document.getElementById('feedbackEmail').value = '';
+            }
+        } else {
+            notifyUser(data.message || 'Failed to submit feedback.', 'danger');
+        }
+    } catch (err) {
+        console.error('Error submitting feedback form:', err);
+        notifyUser('Network error while submitting feedback. Please try again.', 'danger');
+    }
+}
+
+async function fetchAdminFeedbacks() {
+    if (!user || user.role !== 'admin') return;
+
+    try {
+        const res = await fetch('/api/admin/feedbacks', {
+            headers: {
+                'Authorization': `Bearer ${user.token}`
+            }
+        });
+
+        if (res.ok) {
+            const feedbacks = await res.json();
+            
+            // Update feedbacks badge
+            const countBadge = document.getElementById('feedbackCountBadge');
+            if (countBadge) {
+                countBadge.innerText = `${feedbacks.length} Feedbacks`;
+            }
+
+            renderAdminFeedbacks(feedbacks);
+        } else {
+            console.error('Failed to fetch admin feedbacks');
+        }
+    } catch (err) {
+        console.error('Error fetching feedbacks:', err);
+    }
+}
+
+function renderAdminFeedbacks(feedbacks) {
+    const table = document.getElementById('adminFeedbacksTable');
+    if (!table) return;
+
+    table.innerHTML = feedbacks.map(f => {
+        const starsHtml = Array.from({ length: 5 }, (_, idx) => 
+            `<i class="${idx < f.rating ? 'fas' : 'far'} fa-star text-warning small"></i>`
+        ).join('');
+
+        const formattedDate = new Date(f.createdAt).toLocaleDateString('en-IN', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric'
+        });
+
+        return `
+            <tr>
+                <td>
+                    <div class="fw-bold">${escapeHtml(f.name)}</div>
+                    <div class="small text-secondary">${escapeHtml(f.email)}</div>
+                </td>
+                <td>
+                    <div class="d-flex gap-1">${starsHtml}</div>
+                    <small class="text-secondary">(${f.rating}/5)</small>
+                </td>
+                <td style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: normal;">
+                    ${escapeHtml(f.message)}
+                </td>
+                <td class="small text-secondary">${formattedDate}</td>
+                <td>
+                    <button class="btn btn-sm btn-danger rounded-pill px-3" onclick="deleteAdminFeedback('${f._id}')">
+                        <i class="fas fa-trash-can me-1"></i>Delete
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('') || '<tr><td colspan="5" class="text-center py-4">No feedbacks received yet.</td></tr>';
+}
+
+async function deleteAdminFeedback(id) {
+    if (!confirm('Are you sure you want to delete this feedback?')) return;
+
+    try {
+        const res = await fetch(`/api/admin/feedbacks/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${user.token}`
+            }
+        });
+
+        if (res.ok) {
+            notifyUser('Feedback deleted successfully!', 'success');
+            fetchAdminFeedbacks();
+        } else {
+            const data = await res.json();
+            notifyUser(data.message || 'Failed to delete feedback.', 'danger');
+        }
+    } catch (err) {
+        console.error('Error deleting feedback:', err);
+        notifyUser('Error deleting feedback. Check console.', 'danger');
+    }
+}

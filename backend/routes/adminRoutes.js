@@ -13,7 +13,9 @@ const {
     getAllCustomers,
     createCoupon,
     getCoupons,
-    deleteCoupon
+    deleteCoupon,
+    getFeedbacks,
+    deleteFeedback
 } = require('../controllers/adminController');
 const { protect, admin } = require('../middleware/authMiddleware');
 
@@ -32,5 +34,9 @@ router.get('/export-csv', protect, admin, exportOrdersCSV);
 router.get('/coupons', protect, admin, getCoupons);
 router.post('/coupons', protect, admin, createCoupon);
 router.delete('/coupons/:id', protect, admin, deleteCoupon);
+
+// Feedback Management
+router.get('/feedbacks', protect, admin, getFeedbacks);
+router.delete('/feedbacks/:id', protect, admin, deleteFeedback);
 
 module.exports = router;

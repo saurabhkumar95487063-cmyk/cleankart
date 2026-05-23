@@ -58,18 +58,8 @@ const seedData = async () => {
         await Service.insertMany(services);
         console.log('Services Seeded!');
 
-        // Create Admin
-        await User.deleteMany({ email: 'admin@cleankart.com' });
-        await User.create({
-            name: 'Admin',
-            email: 'admin@cleankart.com',
-            phone: '0000000000',
-            password: 'admin123',
-            role: 'admin',
-            status: 'active',
-            isVerified: true
-        });
-        console.log('Admin User Created!');
+        // Admin should be registered manually or exists already; removing test admin creation to prevent test data seeding
+        console.log('Skipping test admin creation to avoid seeding test data');
 
         process.exit();
     } catch (error) {

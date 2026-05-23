@@ -48,6 +48,7 @@ app.use('/api/services', require('./routes/serviceRoutes'));
 app.use('/api/orders', require('./routes/orderRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/categories', require('./routes/categoryRoutes'));
+app.use('/api/feedback', require('./routes/feedbackRoutes'));
 
 // Socket.io for Real-time tracking
 io.on('connection', (socket) => {
