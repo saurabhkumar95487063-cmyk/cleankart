@@ -135,8 +135,8 @@ const registerUser = async (req, res) => {
             userExists.resetPasswordOtp = otp;
             userExists.resetPasswordExpire = Date.now() + 15 * 60 * 1000;
             await userExists.save();
-            await sendSMS(cleanedPhone, otp);
-            await sendEmail(userExists.email, otp);
+            sendSMS(cleanedPhone, otp);
+            sendEmail(userExists.email, otp);
             return res.status(201).json({
                 message: 'OTP resent to your phone & email',
                 userId: userExists._id,
@@ -178,8 +178,8 @@ const registerUser = async (req, res) => {
     });
 
     if (user) {
-        await sendSMS(cleanedPhone, otp);
-        await sendEmail(email, otp);
+        sendSMS(cleanedPhone, otp);
+        sendEmail(email, otp);
 
         res.status(201).json({
             message: 'OTP sent to your phone & email',
@@ -348,8 +348,8 @@ const forgotPassword = async (req, res) => {
     user.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
     await user.save();
 
-    await sendSMS(user.phone, otp);
-    await sendEmail(user.email, otp);
+    sendSMS(user.phone, otp);
+    sendEmail(user.email, otp);
 
     const maskedPhone = user.phone.slice(0, 2) + '******' + user.phone.slice(-2);
     res.json({ message: `OTP sent successfully to ${maskedPhone}` });
