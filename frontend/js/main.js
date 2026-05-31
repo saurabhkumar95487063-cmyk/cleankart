@@ -2089,31 +2089,8 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
             notifyUser('Welcome back, ' + user.name + '!', 'success');
         } else {
             console.log('Login failed with message:', data.message);
-            if (data.userId) {
-                currentSignupUserId = data.userId;
-                
-                // Hide login modal
-                const loginModalEl = document.getElementById('loginModal');
-                if (loginModalEl) {
-                    const modalInstance = bootstrap.Modal.getInstance(loginModalEl) || new bootstrap.Modal(loginModalEl);
-                    modalInstance.hide();
-                }
-
-                // Wait for backdrop to clear before showing OTP modal
-                setTimeout(() => {
-                    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-                    document.body.classList.remove('modal-open');
-                    document.body.style.paddingRight = '';
-                    
-                    const otpModalEl = document.getElementById('signupOtpModal');
-                    if (otpModalEl) {
-                        new bootstrap.Modal(otpModalEl).show();
-                    }
-                }, 400);
-            } else {
-                showFormError('loginErrorAlert', 'loginErrorMsg', data.message || 'Invalid credentials');
-                notifyUser(data.message || 'Invalid credentials', 'danger');
-            }
+            showFormError('loginErrorAlert', 'loginErrorMsg', data.message || 'Invalid credentials');
+            notifyUser(data.message || 'Invalid credentials', 'danger');
         }
     } catch (err) {
         console.error('Fetch Error:', err);
