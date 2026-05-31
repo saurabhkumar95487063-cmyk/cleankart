@@ -2146,7 +2146,7 @@ document.getElementById('signupForm').addEventListener('submit', async (e) => {
         const data = await res.json();
         if (res.ok) {
             currentSignupUserId = data.userId;
-            notifyUser('OTP sent to your phone!', 'success');
+            notifyUser('OTP sent to your phone & email!', 'success');
             
             // Hide signup modal
             const signupModalEl = document.getElementById('signupModal');
