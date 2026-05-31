@@ -822,10 +822,8 @@ function updateAuthUI() {
                 // Real-time status updates for specific users
                 trackingSocket.off('statusUpdate');
                 trackingSocket.on('statusUpdate', (data) => {
-                    notifyUser(`Order #${data.orderId.slice(-6)} is now ${data.status}!`, 'success');
                     if (user.role === 'user') {
-                        fetchUserOrders();
-                        playNotificationSound(); // Standard customers only receive a quick chime
+                        fetchUserOrders(); // Silent refresh for customers (no audio or visual toast alert)
                     }
                 });
                 
@@ -3500,8 +3498,6 @@ async function initTrackingMap(orderId, currentStatus) {
         trackingSocket.on('statusUpdate', async (data) => {
             if (data.orderId === orderId) {
                 renderOrderProgress(data.status);
-                const displayStatus = data.status === 'Pending' ? 'Placed' : (data.status === 'Placed' ? 'Confirmed' : data.status);
-                notifyUser(`Order Status: ${displayStatus}`, 'info')
                 // Re-fetch to update agent details
                 await fetchAndRefreshAgentInfo(orderId);
             }
