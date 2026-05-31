@@ -5,6 +5,45 @@ let trackingSocket = null;
 let alarmAudioContext = null;
 let alarmIntervalId = null;
 
+function updateConnectionStatusBadge(status) {
+    let badge = document.getElementById('socketConnectionBadge');
+    if (!badge) {
+        badge = document.createElement('div');
+        badge.id = 'socketConnectionBadge';
+        badge.style.position = 'fixed';
+        badge.style.bottom = '15px';
+        badge.style.left = '15px';
+        badge.style.zIndex = '9999';
+        badge.style.fontSize = '0.65rem';
+        badge.style.padding = '5px 10px';
+        badge.style.borderRadius = '50px';
+        badge.style.fontWeight = 'bold';
+        badge.style.backdropFilter = 'blur(5px)';
+        badge.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.3)';
+        document.body.appendChild(badge);
+    }
+    
+    // Expose playNotificationSound globally so that it can be triggered from inline onclick handlers
+    window.playNotificationSound = playNotificationSound;
+    
+    if (status === 'connected') {
+        badge.style.background = 'rgba(22, 163, 74, 0.2)';
+        badge.style.border = '1px solid #22c55e';
+        badge.style.color = '#4ade80';
+        badge.innerHTML = `<span class="spinner-grow spinner-grow-sm me-1 text-success" style="width: 8px; height: 8px;"></span> Live Updates: Active <a href="#" onclick="event.preventDefault(); window.playNotificationSound();" class="text-success ms-2 fw-bold" style="text-decoration: underline;">Test Audio</a>`;
+    } else if (status === 'connecting') {
+        badge.style.background = 'rgba(234, 179, 8, 0.2)';
+        badge.style.border = '1px solid #eab308';
+        badge.style.color = '#fef08a';
+        badge.innerHTML = `<span class="spinner-border spinner-border-sm me-1 text-warning" style="width: 8px; height: 8px;"></span> Live Updates: Connecting...`;
+    } else {
+        badge.style.background = 'rgba(220, 38, 38, 0.2)';
+        badge.style.border = '1px solid #ef4444';
+        badge.style.color = '#fca5a5';
+        badge.innerHTML = `<i class="fas fa-exclamation-circle me-1"></i> Live Updates: Offline <a href="#" onclick="event.preventDefault(); window.playNotificationSound();" class="text-danger ms-2 fw-bold" style="text-decoration: underline;">Test Audio</a>`;
+    }
+}
+
 function stopLoopingAlarm() {
     if (alarmIntervalId) {
         clearInterval(alarmIntervalId);
@@ -73,11 +112,33 @@ function startLoopingAlarm() {
         `;
         document.body.appendChild(banner);
 
-        // Sound loop trigger
-        alarmIntervalId = setInterval(() => {
+        // Sound loop trigger with Autoplay browser restriction workaround
+        const playBeepSequence = () => {
             if (!alarmAudioContext) return;
-            const now = alarmAudioContext.currentTime;
             
+            // Handle browser Autoplay policy (suspended state)
+            if (alarmAudioContext.state === 'suspended') {
+                console.warn('AudioContext is suspended by the browser. Awaiting user interaction (click/touch) to resume...');
+                
+                const resumeContext = () => {
+                    if (alarmAudioContext && alarmAudioContext.state === 'suspended') {
+                        alarmAudioContext.resume().then(() => {
+                            console.log('AudioContext successfully resumed via user interaction!');
+                            playBeepSequence(); // Play beep immediately upon successful resume
+                        });
+                    }
+                    document.removeEventListener('click', resumeContext);
+                    document.removeEventListener('touchstart', resumeContext);
+                    document.removeEventListener('keydown', resumeContext);
+                };
+                
+                document.addEventListener('click', resumeContext);
+                document.addEventListener('touchstart', resumeContext);
+                document.addEventListener('keydown', resumeContext);
+                return;
+            }
+
+            const now = alarmAudioContext.currentTime;
             const osc1 = alarmAudioContext.createOscillator();
             const gain1 = alarmAudioContext.createGain();
             osc1.type = 'sine';
@@ -91,7 +152,7 @@ function startLoopingAlarm() {
             osc1.stop(now + 0.3);
             
             setTimeout(() => {
-                if (!alarmAudioContext) return;
+                if (!alarmAudioContext || alarmAudioContext.state === 'suspended') return;
                 const now2 = alarmAudioContext.currentTime;
                 const osc2 = alarmAudioContext.createOscillator();
                 const gain2 = alarmAudioContext.createGain();
@@ -105,8 +166,10 @@ function startLoopingAlarm() {
                 osc2.start(now2);
                 osc2.stop(now2 + 0.3);
             }, 150);
-            
-        }, 1500);
+        };
+
+        playBeepSequence();
+        alarmIntervalId = setInterval(playBeepSequence, 1500);
     } catch (e) {
         console.error('Failed to start looping alarm:', e);
     }
@@ -163,6 +226,24 @@ function getSocket() {
             const backendUrl = window.BACKEND_URL || 'https://laundry-backend-4jl7.onrender.com';
             trackingSocket = io(backendUrl);
         }
+
+        // Connection status tracking in the bottom-left corner of the dashboard
+        updateConnectionStatusBadge('connecting');
+
+        trackingSocket.on('connect', () => {
+            console.log('Socket connected successfully!');
+            updateConnectionStatusBadge('connected');
+        });
+
+        trackingSocket.on('connect_error', (err) => {
+            console.error('Socket connection error:', err);
+            updateConnectionStatusBadge('disconnected');
+        });
+
+        trackingSocket.on('disconnect', () => {
+            console.log('Socket disconnected!');
+            updateConnectionStatusBadge('disconnected');
+        });
     }
     return trackingSocket;
 }
@@ -284,6 +365,28 @@ window.viewKYC = function(path) {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Unlocks browser audio autoplay limits on first click/touch/keypress
+    const unlockAudio = () => {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) {
+            const ctx = new AudioContext();
+            if (ctx.state === 'suspended') {
+                ctx.resume().then(() => {
+                    ctx.close();
+                    console.log('AudioContext successfully unlocked on first user interaction!');
+                }).catch(e => console.warn(e));
+            } else {
+                ctx.close();
+            }
+        }
+        document.removeEventListener('click', unlockAudio);
+        document.removeEventListener('touchstart', unlockAudio);
+        document.removeEventListener('keydown', unlockAudio);
+    };
+    document.addEventListener('click', unlockAudio);
+    document.addEventListener('touchstart', unlockAudio);
+    document.addEventListener('keydown', unlockAudio);
+
     updateAuthUI();
     if (user && user.token) {
         verifySession();
@@ -734,6 +837,7 @@ function updateAuthUI() {
                     console.log('Real-time orderUpdate event received:', data);
                     if (!user) return;
 
+                    let notificationReason = '';
                     const statusL = String(data.status || '').trim().toLowerCase();
                     const pincodeL = String(data.pincode || '').trim();
                     const serviceAreaL = String(user.serviceArea || '').trim();
