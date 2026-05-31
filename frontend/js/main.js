@@ -727,34 +727,76 @@ function updateAuthUI() {
                     }
                 });
                 
-                // Real-time order updates for auto-refreshing admin/partners
+                // Real-time order updates for auto-refreshing admin/partners based on workflow
                 trackingSocket.off('orderUpdate');
                 trackingSocket.on('orderUpdate', (data) => {
                     console.log('Real-time orderUpdate event received:', data);
-                    
-                    // Trigger sound notification
-                    if (user && ['admin', 'laundry_partner', 'pickup_agent', 'delivery_agent'].includes(user.role)) {
-                        startLoopingAlarm();
-                    } else {
-                        playNotificationSound();
-                    }
-                    
-                    // Show a toast message informing the user
-                    let toastMsg = 'Dashboard auto-refreshed!';
-                    if (data.type === 'new_order') {
-                        toastMsg = 'New order received! Auto-refreshed dashboard.';
-                    } else if (data.type === 'status_update') {
-                        toastMsg = `Order status updated to "${data.status}". Auto-refreshed dashboard.`;
-                    }
-                    notifyUser(toastMsg, 'info');
+                    if (!user) return;
 
-                    // Auto-refresh the view based on role
+                    let isRelevant = false;
+                    let notificationReason = '';
+
                     if (user.role === 'admin') {
-                        fetchAdminOrders();
-                    } else if (['pickup_agent', 'delivery_agent', 'laundry_partner'].includes(user.role)) {
-                        fetchDeliveryOrders();
+                        isRelevant = true;
+                        notificationReason = data.type === 'new_order' ? 'New order placed!' : 'Order status updated.';
+                    } else if (user.role === 'laundry_partner') {
+                        // Relevant if Placed (available to claim) in their pincode, OR if they are the assigned laundry partner
+                        const isAvailableToClaim = (data.status === 'Placed') && (String(data.pincode) === String(user.serviceArea));
+                        const isAssignedToMe = data.laundryPartner && (String(data.laundryPartner) === String(user._id));
+                        
+                        if (isAvailableToClaim || isAssignedToMe) {
+                            isRelevant = true;
+                            notificationReason = isAvailableToClaim ? 'New claimable order in your area!' : 'Your active order status updated.';
+                        }
+                    } else if (user.role === 'pickup_agent') {
+                        // Relevant if Laundry Confirmed (available for pickup) in their pincode, OR if they are the assigned pickup agent
+                        const isAvailablePickup = (data.status === 'Laundry Confirmed') && (String(data.pincode) === String(user.serviceArea));
+                        const isAssignedToMe = data.pickupAgent && (String(data.pickupAgent) === String(user._id));
+                        
+                        if (isAvailablePickup || isAssignedToMe) {
+                            isRelevant = true;
+                            notificationReason = isAvailablePickup ? 'New pickup task in your area!' : 'Your active pickup status updated.';
+                        }
+                    } else if (user.role === 'delivery_agent') {
+                        // Relevant if Ready (available for delivery) in their pincode, OR if they are the assigned delivery agent
+                        const isAvailableDelivery = (data.status === 'Ready') && (String(data.pincode) === String(user.serviceArea));
+                        const isAssignedToMe = data.deliveryAgent && (String(data.deliveryAgent) === String(user._id));
+                        
+                        if (isAvailableDelivery || isAssignedToMe) {
+                            isRelevant = true;
+                            notificationReason = isAvailableDelivery ? 'New delivery task in your area!' : 'Your active delivery status updated.';
+                        }
                     } else if (user.role === 'user') {
-                        fetchUserOrders();
+                        // Relevant only if it is their order
+                        // statusUpdate room checks cover this, but as fallback check user orders refresh
+                        isRelevant = false; 
+                    }
+
+                    if (isRelevant) {
+                        // Trigger sound notification (looping alarm for operators, single chime for others)
+                        if (['admin', 'laundry_partner', 'pickup_agent', 'delivery_agent'].includes(user.role)) {
+                            startLoopingAlarm();
+                        } else {
+                            playNotificationSound();
+                        }
+                        
+                        // Show a toast message informing the user
+                        let toastMsg = 'Dashboard auto-refreshed!';
+                        if (notificationReason) {
+                            toastMsg = `${notificationReason} Auto-refreshed.`;
+                        } else if (data.type === 'new_order') {
+                            toastMsg = 'New order received! Auto-refreshed dashboard.';
+                        } else if (data.type === 'status_update') {
+                            toastMsg = `Order status updated to "${data.status}". Auto-refreshed dashboard.`;
+                        }
+                        notifyUser(toastMsg, 'info');
+
+                        // Auto-refresh the view based on role
+                        if (user.role === 'admin') {
+                            fetchAdminOrders();
+                        } else if (['pickup_agent', 'delivery_agent', 'laundry_partner'].includes(user.role)) {
+                            fetchDeliveryOrders();
+                        }
                     }
                 });
             }

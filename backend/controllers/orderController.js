@@ -85,7 +85,12 @@ const addOrderItems = async (req, res) => {
             const createdOrder = await order.save();
             const io = req.app.get('socketio');
             if (io) {
-                io.emit('orderUpdate', { type: 'new_order', orderId: createdOrder._id });
+                io.emit('orderUpdate', { 
+                    type: 'new_order', 
+                    orderId: createdOrder._id,
+                    status: createdOrder.status,
+                    pincode: createdOrder.address?.pincode
+                });
             }
             res.status(201).json(createdOrder);
         } catch (err) {
@@ -193,7 +198,15 @@ const updateOrderStatus = async (req, res) => {
             
             const io = req.app.get('socketio');
             if (io) {
-                io.emit('orderUpdate', { type: 'status_update', orderId: updatedOrder._id, status, userId: updatedOrder.user._id || updatedOrder.user });
+                io.emit('orderUpdate', { 
+                    type: 'status_update', 
+                    orderId: updatedOrder._id, 
+                    status, 
+                    pincode: updatedOrder.address?.pincode,
+                    laundryPartner: updatedOrder.laundryPartner?._id || updatedOrder.laundryPartner,
+                    pickupAgent: updatedOrder.pickupAgent?._id || updatedOrder.pickupAgent,
+                    deliveryAgent: updatedOrder.deliveryAgent?._id || updatedOrder.deliveryAgent
+                });
             }
         }
 
