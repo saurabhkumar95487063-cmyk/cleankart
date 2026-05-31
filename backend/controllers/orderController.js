@@ -83,6 +83,10 @@ const addOrderItems = async (req, res) => {
 
         try {
             const createdOrder = await order.save();
+            const io = req.app.get('socketio');
+            if (io) {
+                io.emit('orderUpdate', { type: 'new_order', orderId: createdOrder._id });
+            }
             res.status(201).json(createdOrder);
         } catch (err) {
             console.error('Order Save Error:', err);
@@ -186,6 +190,11 @@ const updateOrderStatus = async (req, res) => {
             console.log(`WHATSAPP TRIGGER: To ${order.user.name} (${order.user.phone || 'N/A'})`);
             console.log(`MESSAGE: Your CleanKart Order #${order._id.toString().slice(-6)} status is now: ${status}`);
             console.log('--------------------------------------------');
+            
+            const io = req.app.get('socketio');
+            if (io) {
+                io.emit('orderUpdate', { type: 'status_update', orderId: updatedOrder._id, status, userId: updatedOrder.user._id || updatedOrder.user });
+            }
         }
 
         res.json(updatedOrder);

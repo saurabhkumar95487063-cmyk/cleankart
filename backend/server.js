@@ -10,6 +10,7 @@ const rateLimit = require('express-rate-limit');
 const app = express();
 const server = http.createServer(app);
 const io = socketio(server);
+app.set('socketio', io);
 
 // Connect to Database
 connectDB();
