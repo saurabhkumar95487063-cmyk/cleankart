@@ -30,7 +30,7 @@ function updateConnectionStatusBadge(status) {
         badge.style.background = 'rgba(22, 163, 74, 0.2)';
         badge.style.border = '1px solid #22c55e';
         badge.style.color = '#4ade80';
-        badge.innerHTML = `<span class="spinner-grow spinner-grow-sm me-1 text-success" style="width: 8px; height: 8px;"></span> Live Updates: Active <a href="#" onclick="event.preventDefault(); window.playNotificationSound();" class="text-success ms-2 fw-bold" style="text-decoration: underline;">Test Audio</a>`;
+        badge.innerHTML = `<span class="spinner-grow spinner-grow-sm me-1 text-success" style="width: 8px; height: 8px;"></span> Live Updates: Active`;
     } else if (status === 'connecting') {
         badge.style.background = 'rgba(234, 179, 8, 0.2)';
         badge.style.border = '1px solid #eab308';
@@ -40,7 +40,7 @@ function updateConnectionStatusBadge(status) {
         badge.style.background = 'rgba(220, 38, 38, 0.2)';
         badge.style.border = '1px solid #ef4444';
         badge.style.color = '#fca5a5';
-        badge.innerHTML = `<i class="fas fa-exclamation-circle me-1"></i> Live Updates: Offline <a href="#" onclick="event.preventDefault(); window.playNotificationSound();" class="text-danger ms-2 fw-bold" style="text-decoration: underline;">Test Audio</a>`;
+        badge.innerHTML = `<i class="fas fa-exclamation-circle me-1"></i> Live Updates: Offline`;
     }
 }
 
@@ -55,8 +55,6 @@ function stopLoopingAlarm() {
         } catch (e) {}
         alarmAudioContext = null;
     }
-    const banner = document.getElementById('alarmAlertBanner');
-    if (banner) banner.remove();
 }
 window.stopLoopingAlarm = stopLoopingAlarm;
 
@@ -69,49 +67,6 @@ function startLoopingAlarm() {
         
         alarmAudioContext = new AudioContext();
         
-        // Dynamic premium glassmorphic alert banner
-        const banner = document.createElement('div');
-        banner.id = 'alarmAlertBanner';
-        banner.style.position = 'fixed';
-        banner.style.top = '20px';
-        banner.style.left = '50%';
-        banner.style.transform = 'translateX(-50%)';
-        banner.style.zIndex = '99999';
-        banner.style.width = '90%';
-        banner.style.maxWidth = '450px';
-        banner.style.background = 'rgba(15, 23, 42, 0.95)';
-        banner.style.border = '2px solid #ef4444';
-        banner.style.borderRadius = '12px';
-        banner.style.boxShadow = '0 0 20px rgba(239, 68, 68, 0.5)';
-        banner.style.padding = '16px';
-        banner.style.color = '#fff';
-        banner.style.backdropFilter = 'blur(10px)';
-        banner.style.animation = 'pulse-border 1.5s infinite';
-        
-        if (!document.getElementById('alarmAnimationStyles')) {
-            const style = document.createElement('style');
-            style.id = 'alarmAnimationStyles';
-            style.innerHTML = `
-                @keyframes pulse-border {
-                    0% { box-shadow: 0 0 10px rgba(239, 68, 68, 0.4); }
-                    50% { box-shadow: 0 0 25px rgba(239, 68, 68, 0.8); }
-                    100% { box-shadow: 0 0 10px rgba(239, 68, 68, 0.4); }
-                }
-            `;
-            document.head.appendChild(style);
-        }
-        
-        banner.innerHTML = `
-            <div class="d-flex align-items-center justify-content-between gap-3">
-                <div class="text-start">
-                    <h6 class="mb-1 text-danger fw-bold"><i class="fas fa-bell me-2 blink text-danger"></i>NEW ACTION REQUIRED</h6>
-                    <p class="small text-secondary mb-0" style="font-size: 0.75rem;">Your dashboard has updated. Review now to stop alarm.</p>
-                </div>
-                <button class="btn btn-danger btn-sm fw-bold px-3 py-2 rounded-pill shadow" onclick="stopLoopingAlarm()"><i class="fas fa-volume-mute me-1"></i>Stop Alarm</button>
-            </div>
-        `;
-        document.body.appendChild(banner);
-
         // Sound loop trigger with Autoplay browser restriction workaround
         const playBeepSequence = () => {
             if (!alarmAudioContext) return;
