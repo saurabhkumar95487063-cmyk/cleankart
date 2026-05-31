@@ -637,7 +637,7 @@ async function fetchUserOrders() {
         list.innerHTML = orders.map(o => {
             const s = o.status.trim().toLowerCase();
             let uiIdx = 0;
-            if (s === 'placed') uiIdx = 0;
+            if (s === 'placed' || s === 'pending') uiIdx = 0;
             else if (s === 'picked' || s === 'picked up' || s === 'dropped at laundry') uiIdx = 1;
             else if (s === 'arrived' || s === 'arrived in laundry') uiIdx = 2;
             else if (s === 'washing' || s === 'wash' || s === 'in process') uiIdx = 3;
@@ -784,6 +784,7 @@ async function fetchAdminOrders() {
         const orders = await res.json();
         allAdminOrders = orders; // Store globally
         renderAdminOrdersList(orders);
+        renderTodayOrdersList(orders);
     } catch (err) {
         console.error('Error fetching admin orders');
     }
@@ -805,6 +806,7 @@ function renderAdminOrdersList(orders) {
             <td>
                 <div class="d-flex gap-2">
                     <select class="form-select form-select-sm bg-dark text-white border-secondary" onchange="updateStatus('${o._id}', this.value)">
+                        <option value="Pending" ${o.status === 'Pending' ? 'selected' : ''}>Pending</option>
                         <option value="Placed" ${o.status === 'Placed' ? 'selected' : ''}>Placed</option>
                         <option value="Accepted" ${o.status === 'Accepted' ? 'selected' : ''}>Accepted</option>
                         <option value="Picked Up" ${o.status === 'Picked Up' ? 'selected' : ''}>Picked Up</option>
@@ -819,6 +821,72 @@ function renderAdminOrdersList(orders) {
         </tr>
     `).join('') || '<tr><td colspan="6" class="text-center py-4">No orders found</td></tr>';
 }
+
+function renderTodayOrdersList(orders) {
+    const table = document.getElementById('adminTodayOrdersTable');
+    const badge = document.getElementById('adminTodayOrdersCountBadge');
+    if (!table) return;
+
+    // Filter orders that have status 'Pending'
+    const pendingOrders = orders.filter(o => o.status === 'Pending' || o.status === 'pending');
+
+    if (badge) {
+        badge.innerText = `${pendingOrders.length} Awaiting Approval`;
+        if (pendingOrders.length > 0) {
+            badge.className = 'badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold';
+        } else {
+            badge.className = 'badge bg-secondary text-white px-3 py-2 rounded-pill fw-bold';
+        }
+    }
+
+    table.innerHTML = pendingOrders.map(o => {
+        const name = escapeHtml(o.address?.fullName || o.user?.name || 'Guest');
+        const phone = escapeHtml(o.address?.mobile || o.user?.phone || 'N/A');
+        const addressLine = escapeHtml(o.address?.addressLine || 'N/A');
+        const pincode = escapeHtml(o.address?.pincode || 'N/A');
+        const itemsList = o.items.map(i => `${i.quantity}x ${escapeHtml(i.name)}`).join(', ');
+
+        return `
+            <tr>
+                <td class="fw-bold">#${o._id.slice(-6).toUpperCase()}</td>
+                <td>
+                    <div class="fw-bold text-light">${name}</div>
+                    <div class="small text-info"><i class="fas fa-phone-alt me-1" style="font-size: 0.7rem;"></i>${phone}</div>
+                </td>
+                <td>
+                    <div class="small text-wrap text-secondary" style="max-width: 250px;">${addressLine}</div>
+                    <div class="small text-warning fw-bold mt-1">Pincode: ${pincode}</div>
+                </td>
+                <td>
+                    <div class="small text-wrap text-light" style="max-width: 200px;">${itemsList}</div>
+                    <div class="fw-bold text-success mt-1">₹${o.totalPrice}</div>
+                </td>
+                <td>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-success btn-sm fw-bold px-3 rounded-pill" onclick="adminConfirmOrder('${o._id}')">
+                            <i class="fas fa-check me-1"></i>Confirm
+                        </button>
+                        <button class="btn btn-danger btn-sm fw-bold px-3 rounded-pill" onclick="adminRejectOrder('${o._id}')">
+                            <i class="fas fa-times me-1"></i>Reject
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('') || '<tr><td colspan="5" class="text-center py-4 text-secondary"><i class="fas fa-inbox me-2"></i>No new orders waiting for approval</td></tr>';
+}
+
+window.adminConfirmOrder = async function(orderId) {
+    if (confirm('Are you sure you want to confirm this order?')) {
+        await updateStatus(orderId, 'Placed');
+    }
+};
+
+window.adminRejectOrder = async function(orderId) {
+    if (confirm('Are you sure you want to reject/cancel this order?')) {
+        await updateStatus(orderId, 'Cancelled');
+    }
+};
 
 function filterOrders() {
     const input = document.getElementById('adminOrderSearch');
@@ -3083,7 +3151,7 @@ function renderOrderProgress(status) {
     const s = status.trim().toLowerCase();
     
     let uiIdx = 0;
-    if (s === 'placed') uiIdx = 0;
+    if (s === 'placed' || s === 'pending') uiIdx = 0;
     else if (s === 'picked' || s === 'picked up' || s === 'dropped at laundry') uiIdx = 1;
     else if (s === 'arrived' || s === 'arrived in laundry') uiIdx = 2;
     else if (s === 'washing' || s === 'wash' || s === 'in process') uiIdx = 3;
@@ -3485,6 +3553,7 @@ window.trackSupportOrder = function() {
     // Color coding for order status
     let statusBadgeColor = 'secondary';
     if (order.status === 'Placed') statusBadgeColor = 'primary';
+    else if (order.status === 'Pending') statusBadgeColor = 'warning';
     else if (['Laundry Confirmed', 'Pickup Assigned', 'Picked', 'Dropped at Laundry'].includes(order.status)) statusBadgeColor = 'warning';
     else if (['Arrived in Laundry', 'Washing'].includes(order.status)) statusBadgeColor = 'info';
     else if (order.status === 'Ready') statusBadgeColor = 'success';
@@ -3763,9 +3832,18 @@ window.sendAutomatedPartnerNotification = function(order, status) {
     let targetPhone = '';
     
     const orderIdShort = order._id.slice(-6).toUpperCase();
-    const customerMobile = order.address?.mobile || '';
+    const customerMobile = order.address?.mobile || (order.user?.phone || '');
+    const customerName = order.address?.fullName || (order.user?.name || 'Customer');
     
-    if (status === 'Laundry Confirmed') {
+    if (status === 'Placed') {
+        // Confirmed by admin -> Notify Customer!
+        targetPhone = customerMobile;
+        message = `Hello ${customerName},\n\nYour CleanKart order *#${orderIdShort}* has been confirmed! 🎉\nOur laundry partner will start processing your order soon.\n\nThank you for choosing CleanKart!`;
+    } else if (status === 'Cancelled' || status === 'Rejected') {
+        // Rejected by admin -> Notify Customer!
+        targetPhone = customerMobile;
+        message = `Hello ${customerName},\n\nWe regret to inform you that your CleanKart order *#${orderIdShort}* has been rejected/cancelled. ❌\nFor any queries, please reply to this message or contact support.\n\nCleanKart Support`;
+    } else if (status === 'Laundry Confirmed') {
         // Confirmed -> notify pickup boy!
         if (order.pickupAgent && order.pickupAgent.phone) {
             targetPhone = order.pickupAgent.phone;
@@ -3780,14 +3858,6 @@ window.sendAutomatedPartnerNotification = function(order, status) {
             message = `Hello ${order.deliveryAgent.name}, CleanKart Order #${orderIdShort} is Ready at the laundry shop! Please collect the package and deliver it to the customer: ${order.address.fullName} (${order.address.addressLine}). Customer Mobile: ${customerMobile}. Link: ${window.location.origin}`;
         } else {
             message = `CleanKart Alert: Order #${orderIdShort} is fully washed and Ready! Delivery Boys, please claim and deliver it. Link: ${window.location.origin}`;
-        }
-    } else if (status === 'Placed') {
-        // Placed -> notify laundry shop!
-        if (order.laundryPartner && order.laundryPartner.phone) {
-            targetPhone = order.laundryPartner.phone;
-            message = `Hello, CleanKart Order #${orderIdShort} has been Placed by customer! Please start processing. Address: ${order.address.addressLine}. Customer Mobile: ${customerMobile}. Link: ${window.location.origin}`;
-        } else {
-            message = `CleanKart Alert: New Order #${orderIdShort} has been placed in your service area! Laundry Partners, please claim it now. Link: ${window.location.origin}`;
         }
     }
 

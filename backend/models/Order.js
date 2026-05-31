@@ -16,7 +16,7 @@ const orderSchema = mongoose.Schema({
         addressLine: String,
         pincode: String
     },
-    status: { type: String, default: 'Placed' },
+    status: { type: String, default: 'Pending' },
     paymentMethod: { type: String, default: 'Cash on Delivery' },
     pickupAgent: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     deliveryAgent: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },

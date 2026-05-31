@@ -608,6 +608,37 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- Today Orders Section -->
+            <div id="adminTodayOrdersSection" class="p-4 rounded-4 bg-glass border border-warning mb-5 shadow-lg">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="text-warning d-flex align-items-center mb-0">
+                        <i class="fas fa-calendar-day me-2"></i>Today Orders (Approval Awaiting)
+                    </h5>
+                    <span class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold" id="adminTodayOrdersCountBadge">0 Awaiting Approval</span>
+                </div>
+                <p class="text-secondary small mb-4">Review customer details and accept/reject orders. Accepted orders will be made available for Laundry Partners to claim. Confirming or rejecting will open a WhatsApp message redirect to the customer.</p>
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover align-middle">
+                        <thead class="text-secondary border-secondary">
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer Info</th>
+                                <th>Address & Pincode</th>
+                                <th>Items & Amount</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminTodayOrdersTable">
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-secondary">
+                                    <i class="fas fa-spinner fa-spin me-2"></i>Loading new orders...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
             <!-- Customer Support Desk: Order Live Finder -->
             <div class="p-4 rounded-4 bg-glass border border-info mb-5 shadow-lg">
