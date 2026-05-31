@@ -1481,13 +1481,6 @@ function renderDeliveryDashboard(orders, cashInHand) {
                             <div class="x-small text-secondary mt-1" style="font-size: 0.6rem;">Show to Delivery Boy upon handing over clean clothes</div>
                         </div>
                         ` : ''}
-                        ${['Picked', 'Dropped at Laundry'].includes(o.status) ? `
-                        <div class="mb-2 p-2 rounded bg-dark border border-warning text-center">
-                            <small class="text-warning fw-bold d-block mb-1" style="font-size: 0.65rem;"><i class="fas fa-store me-1"></i>LAUNDRY RECEIPT OTP</small>
-                            <span class="fs-6 fw-bold text-white">${(parseInt(o._id.slice(-6), 16) * 5 % 9000 + 1000)}</span>
-                            <div class="x-small text-secondary mt-1" style="font-size: 0.6rem;">Verify and use this OTP to confirm receipt of clothes from pickup agent</div>
-                        </div>
-                        ` : ''}
                         ${isClickable ? 
                             `<button class="btn btn-${colorClass} w-100 fw-bold" onclick="updateStatus('${o._id}', '${nextStatus}')">${btnText}</button>` :
                             `<button class="btn btn-${colorClass} w-100 fw-bold" disabled>${btnText}</button>`
@@ -1549,15 +1542,19 @@ function renderDeliveryDashboard(orders, cashInHand) {
                     nextStatus = 'Picked';
                     colorClass = 'warning';
                 } else if (o.status === 'Picked') {
-                    btnText = 'Deliver to Laundry';
-                    nextStatus = 'Dropped at Laundry';
-                    colorClass = 'primary';
+                    btnText = 'Waiting for Laundry Partner';
+                    nextStatus = '';
+                    colorClass = 'secondary';
                 } else if (o.status === 'Dropped at Laundry') {
                     btnText = 'Waiting for Receipt';
                     colorClass = 'secondary';
+                } else if (['Arrived in Laundry', 'Washing', 'Ready', 'Delivery Assigned', 'Out for Delivery', 'Delivered'].includes(o.status)) {
+                    btnText = 'Dropped to Laundry';
+                    nextStatus = '';
+                    colorClass = 'success';
                 }
 
-                const isClickable = ['Pickup Assigned', 'Picked', 'Placed', 'Laundry Confirmed'].includes(o.status);
+                const isClickable = ['Pickup Assigned', 'Placed', 'Laundry Confirmed'].includes(o.status);
 
                 return `
                 <div class="service-card delivery-order-card p-3 mb-3 border-start border-${colorClass} border-4" data-id="${o._id}">
