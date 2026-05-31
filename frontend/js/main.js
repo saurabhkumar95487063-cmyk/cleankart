@@ -2135,7 +2135,7 @@ document.getElementById('signupForm').addEventListener('submit', async (e) => {
     const submitBtn = e.target.querySelector('button[type="submit"]');
     const originalText = submitBtn.innerHTML;
     submitBtn.disabled = true;
-    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Sending OTP...';
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Creating Account...';
 
     try {
         const res = await fetch('/api/auth/register', {
@@ -2145,24 +2145,15 @@ document.getElementById('signupForm').addEventListener('submit', async (e) => {
         });
         const data = await res.json();
         if (res.ok) {
-            currentSignupUserId = data.userId;
-            notifyUser('OTP sent to your phone & email!', 'success');
+            localStorage.setItem('user', JSON.stringify(data));
+            user = data;
+            updateAuthUI();
+            notifyUser('Welcome! Your account has been created.', 'success');
             
             // Hide signup modal
             const signupModalEl = document.getElementById('signupModal');
             const signupModal = bootstrap.Modal.getInstance(signupModalEl) || new bootstrap.Modal(signupModalEl);
             signupModal.hide();
-            
-            // Wait for backdrop to clear before showing OTP modal
-            setTimeout(() => {
-                document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-                document.body.classList.remove('modal-open');
-                document.body.style.paddingRight = '';
-                
-                const otpModalEl = document.getElementById('signupOtpModal');
-                const otpModal = new bootstrap.Modal(otpModalEl);
-                otpModal.show();
-            }, 400);
         } else {
             showFormError('signupErrorAlert', 'signupErrorMsg', data.message);
         }
@@ -2223,52 +2214,25 @@ function openForgotModal() {
     }, 400);
 }
 
-async function sendResetOtp() {
-    console.log("sendResetOtp called");
-    const identifier = document.getElementById('resetInput').value;
-    clearFormError('forgotReqErrorAlert');
-    if (!identifier) return showFormError('forgotReqErrorAlert', 'forgotReqErrorMsg', 'Please enter email or phone');
+async function resetPasswordDirect() {
+    const email = document.getElementById('resetInput').value;
+    const newPassword = document.getElementById('newPassword').value;
+    clearFormError('forgotErrorAlert');
 
-    const submitBtn = document.querySelector('#otpRequestArea button');
+    if (!email || !newPassword) {
+        return showFormError('forgotErrorAlert', 'forgotErrorMsg', 'Please enter email/phone and new password');
+    }
+
+    const submitBtn = document.querySelector('#forgotPasswordFormContainer button');
     const originalText = submitBtn.innerHTML;
     submitBtn.disabled = true;
-    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Sending OTP...';
-
-    try {
-        const res = await fetch('/api/auth/forgotpassword', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ identifier })
-        });
-        const data = await res.json();
-        if (res.ok) {
-            document.getElementById('otpRequestArea').classList.add('d-none');
-            document.getElementById('otpVerifyArea').classList.remove('d-none');
-            notifyUser('OTP sent successfully', 'success');
-        } else {
-            showFormError('forgotReqErrorAlert', 'forgotReqErrorMsg', data.message);
-        }
-    } catch (err) {
-        showFormError('forgotReqErrorAlert', 'forgotReqErrorMsg', 'Server error');
-    } finally {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = originalText;
-    }
-}
-
-async function resetPassword() {
-    const email = document.getElementById('resetInput').value;
-    const otp = document.getElementById('resetOtp').value;
-    const newPassword = document.getElementById('newPassword').value;
-    clearFormError('forgotVerifyErrorAlert');
-
-    if (!otp || !newPassword) return showFormError('forgotVerifyErrorAlert', 'forgotVerifyErrorMsg', 'Enter OTP and New Password');
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Resetting...';
 
     try {
         const res = await fetch('/api/auth/resetpassword', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, otp, newPassword })
+            body: JSON.stringify({ email, newPassword })
         });
         const data = await res.json();
         if (res.ok) {
@@ -2276,19 +2240,17 @@ async function resetPassword() {
             const modalEl = document.getElementById('forgotPasswordModal');
             const modalInstance = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
             modalInstance.hide();
-            // Reset modal for next use
-            setTimeout(() => {
-                document.getElementById('otpRequestArea').classList.remove('d-none');
-                document.getElementById('otpVerifyArea').classList.add('d-none');
-                document.getElementById('resetInput').value = '';
-                document.getElementById('resetOtp').value = '';
-                document.getElementById('newPassword').value = '';
-            }, 500);
+            // Reset fields
+            document.getElementById('resetInput').value = '';
+            document.getElementById('newPassword').value = '';
         } else {
-            showFormError('forgotVerifyErrorAlert', 'forgotVerifyErrorMsg', data.message);
+            showFormError('forgotErrorAlert', 'forgotErrorMsg', data.message);
         }
     } catch (err) {
-        showFormError('forgotVerifyErrorAlert', 'forgotVerifyErrorMsg', 'Server error');
+        showFormError('forgotErrorAlert', 'forgotErrorMsg', 'Server error');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
     }
 }
 

@@ -101,55 +101,38 @@ const registerUser = async (req, res) => {
     const userExists = await User.findOne({ $or: [{ email }, { phone: cleanedPhone }] });
     
     if (userExists) {
-        if (userExists.isVerified) {
-            // Allow existing customers ('user') to apply for partner roles
-            if (userExists.role === 'user' && ['pickup_agent', 'delivery_agent', 'laundry_partner'].includes(role)) {
-                userExists.role = role;
-                userExists.status = 'pending';
-                if (serviceArea) userExists.serviceArea = serviceArea;
-                if (address) userExists.address = address;
-                if (upiId) userExists.upiId = upiId;
-                if (bankAccountNo) userExists.bankAccountNo = bankAccountNo;
-                if (bankIfsc) userExists.bankIfsc = bankIfsc;
-                if (bankName) userExists.bankName = bankName;
-                if (req.file) userExists.kycDocument = `/uploads/kyc/${req.file.filename}`;
-                
-                // Initialize partner stats if not set
-                if (userExists.todayEarnings === undefined) userExists.todayEarnings = 0;
-                if (userExists.mainWallet === undefined) userExists.mainWallet = 0;
-                if (userExists.completedOrdersCount === undefined) userExists.completedOrdersCount = 0;
-                if (userExists.cashInHand === undefined) userExists.cashInHand = 0;
-                userExists.lastEarningUpdate = Date.now();
-                
-                await userExists.save();
-                return res.status(200).json({
-                    message: 'Application submitted successfully! Your account role is pending admin approval.',
-                    userId: userExists._id,
-                    email: userExists.email
-                });
-            }
-            return res.status(400).json({ message: 'Email or Phone already registered' });
-        } else {
-            // User exists but not verified, update OTP and resend
-            const otp = Math.floor(1000 + Math.random() * 9000).toString();
-            userExists.resetPasswordOtp = otp;
-            userExists.resetPasswordExpire = Date.now() + 15 * 60 * 1000;
+        // Allow existing customers ('user') to apply for partner roles
+        if (userExists.role === 'user' && ['pickup_agent', 'delivery_agent', 'laundry_partner'].includes(role)) {
+            userExists.role = role;
+            userExists.status = 'pending';
+            if (serviceArea) userExists.serviceArea = serviceArea;
+            if (address) userExists.address = address;
+            if (upiId) userExists.upiId = upiId;
+            if (bankAccountNo) userExists.bankAccountNo = bankAccountNo;
+            if (bankIfsc) userExists.bankIfsc = bankIfsc;
+            if (bankName) userExists.bankName = bankName;
+            if (req.file) userExists.kycDocument = `/uploads/kyc/${req.file.filename}`;
+            
+            // Initialize partner stats if not set
+            if (userExists.todayEarnings === undefined) userExists.todayEarnings = 0;
+            if (userExists.mainWallet === undefined) userExists.mainWallet = 0;
+            if (userExists.completedOrdersCount === undefined) userExists.completedOrdersCount = 0;
+            if (userExists.cashInHand === undefined) userExists.cashInHand = 0;
+            userExists.lastEarningUpdate = Date.now();
+            
             await userExists.save();
-            sendSMS(cleanedPhone, otp);
-            sendEmail(userExists.email, otp);
-            return res.status(201).json({
-                message: 'OTP resent to your phone & email',
+            return res.status(200).json({
+                message: 'Application submitted successfully! Your account role is pending admin approval.',
                 userId: userExists._id,
                 email: userExists.email
             });
         }
+        return res.status(400).json({ message: 'Email or Phone already registered' });
     }
 
     const status = (role === 'pickup_agent' || role === 'delivery_agent' || role === 'laundry_partner') ? 'pending' : 'active';
     const kycDocument = req.file ? `/uploads/kyc/${req.file.filename}` : null;
     
-    const otp = Math.floor(1000 + Math.random() * 9000).toString();
-
     const isPartner = ['pickup_agent', 'delivery_agent', 'laundry_partner'].includes(role);
 
     const user = await User.create({ 
@@ -166,9 +149,7 @@ const registerUser = async (req, res) => {
         bankAccountNo,
         bankIfsc,
         bankName,
-        resetPasswordOtp: otp,
-        resetPasswordExpire: Date.now() + 15 * 60 * 1000,
-        isVerified: status === 'pending' ? true : false, // Auto-verify partners
+        isVerified: true, // Auto-verify all users immediately
         // Initialize partner specific earning/wallet fields conditionally
         todayEarnings: isPartner ? 0 : undefined,
         mainWallet: isPartner ? 0 : undefined,
@@ -178,13 +159,14 @@ const registerUser = async (req, res) => {
     });
 
     if (user) {
-        sendSMS(cleanedPhone, otp);
-        sendEmail(email, otp);
-
         res.status(201).json({
-            message: 'OTP sent to your phone & email',
-            userId: user._id,
-            email: user.email
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            phone: user.phone,
+            role: user.role,
+            isVerified: user.isVerified,
+            token: generateToken(user._id),
         });
     } else {
         res.status(400).json({ message: 'Invalid user data' });
@@ -356,7 +338,7 @@ const forgotPassword = async (req, res) => {
 };
 
 const resetPassword = async (req, res) => {
-    let { email, otp, newPassword } = req.body; // 'email' field here contains the identifier
+    let { email, newPassword } = req.body; // 'email' field here contains the identifier
     if (!email) return res.status(400).json({ message: 'Email or phone number is required' });
 
     email = email.trim().toLowerCase();
@@ -366,16 +348,12 @@ const resetPassword = async (req, res) => {
         ? email.replace(/\D/g, '').slice(-10) 
         : email;
 
-    const query = {
-        $or: [{ email: cleanEmail }, { phone: cleanEmail }],
-        resetPasswordOtp: otp,
-        resetPasswordExpire: { $gt: Date.now() }
-    };
-
-    const user = await User.findOne(query);
+    const user = await User.findOne({ 
+        $or: [{ email: cleanEmail }, { phone: cleanEmail }] 
+    });
 
     if (!user) {
-        return res.status(400).json({ message: 'Invalid or expired OTP' });
+        return res.status(404).json({ message: 'User not found' });
     }
 
     user.password = newPassword;

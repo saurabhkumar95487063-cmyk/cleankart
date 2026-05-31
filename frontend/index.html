@@ -1577,38 +1577,24 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-4">
-                    <!-- Step 1: Request OTP -->
-                    <div id="otpRequestArea">
-                        <p class="text-secondary small mb-4">Enter your email or phone number to receive a 4-digit OTP.</p>
-                        <div id="forgotReqErrorAlert" class="alert alert-danger d-none py-2 px-3 mb-3 rounded-3 text-start small align-items-center" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171;">
+                    <div id="forgotPasswordFormContainer">
+                        <p class="text-secondary small mb-4">Enter your email or phone number and your new password to reset it.</p>
+                        <div id="forgotErrorAlert" class="alert alert-danger d-none py-2 px-3 mb-3 rounded-3 text-start small align-items-center" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171;">
                             <i class="fas fa-exclamation-circle me-2"></i>
-                            <span id="forgotReqErrorMsg"></span>
+                            <span id="forgotErrorMsg"></span>
                         </div>
                         <div class="mb-3">
-                            <input type="text" class="form-control bg-dark text-white border-secondary" id="resetInput" placeholder="Email or Phone">
-                        </div>
-                        <button class="btn btn-primary w-100" onclick="sendResetOtp()">Send OTP</button>
-                    </div>
-
-                    <!-- Step 2: Verify OTP & Reset -->
-                    <div id="otpVerifyArea" class="d-none">
-                        <p class="text-success small mb-4">OTP sent! Please check your email/phone.</p>
-                        <div id="forgotVerifyErrorAlert" class="alert alert-danger d-none py-2 px-3 mb-3 rounded-3 text-start small align-items-center" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171;">
-                            <i class="fas fa-exclamation-circle me-2"></i>
-                            <span id="forgotVerifyErrorMsg"></span>
-                        </div>
-                        <div class="mb-3">
-                            <label class="small text-secondary mb-1">Enter 4-Digit OTP</label>
-                            <input type="text" class="form-control bg-dark text-white border-secondary text-center fs-4 fw-bold" id="resetOtp" maxlength="4">
+                            <label class="small text-secondary mb-1">Email or Phone Number</label>
+                            <input type="text" class="form-control bg-dark text-white border-secondary" id="resetInput" placeholder="Enter your email or phone" required>
                         </div>
                         <div class="mb-4">
                             <label class="small text-secondary mb-1">New Password</label>
                             <div class="password-container">
-                                <input type="password" class="form-control bg-dark text-white border-secondary" id="newPassword" placeholder="Min 6 characters">
+                                <input type="password" class="form-control bg-dark text-white border-secondary" id="newPassword" placeholder="Min 6 characters" required>
                                 <i class="fa-solid fa-eye toggle-password"></i>
                             </div>
                         </div>
-                        <button class="btn btn-success w-100" onclick="resetPassword()">Update Password</button>
+                        <button class="btn btn-primary w-100 py-2 fw-bold" onclick="resetPasswordDirect()">Reset Password</button>
                     </div>
                 </div>
             </div>
