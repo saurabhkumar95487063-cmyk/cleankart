@@ -3402,8 +3402,12 @@ async function completeOrderPlacement(paymentInfo, addressData) {
         });
         if (res.ok) {
             const order = await res.json();
-            notifyUser('Order placed successfully!', 'success');
-            sendWhatsAppNotification(order, addressData.mobile);
+            notifyUser('Order Placed successfully!', 'success');
+            try {
+                sendWhatsAppNotification(order, addressData.mobile);
+            } catch (waErr) {
+                console.error('WhatsApp notification failed to open:', waErr);
+            }
             cart = [];
             localStorage.removeItem('cart');
             updateCartUI();
