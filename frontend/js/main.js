@@ -2016,6 +2016,12 @@ function updateCartUI() {
     if (checkoutTotal) checkoutTotal.innerText = `₹${total}`;
     if (finalTotalEl) finalTotalEl.innerText = `₹${finalTotal}`;
 
+    // Auto-update UPI QR Code if online payment option is active
+    const payOnline = document.getElementById('payOnline');
+    if (payOnline && payOnline.checked) {
+        togglePaymentView('online');
+    }
+
     // Update quantities in cards
     // First reset all to 0
     document.querySelectorAll('[id^="qty-"]').forEach(el => el.innerText = '0');
@@ -2490,20 +2496,30 @@ document.getElementById('profileForm')?.addEventListener('submit', async (e) => 
 
 function togglePaymentView(mode) {
     const upiSection = document.getElementById('upiSection');
-    const total = cart.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+    if (!upiSection) return;
     
     if (mode === 'online') {
         upiSection.classList.remove('d-none');
-        document.getElementById('qrAmount').innerText = `₹${total}`;
+        
+        // Read the actual grand total (including delivery fee & discounts)
+        const finalTotalEl = document.getElementById('finalTotal');
+        let finalAmountText = finalTotalEl ? finalTotalEl.innerText.replace('₹', '').trim() : '0';
+        let finalAmount = parseFloat(finalAmountText) || 0;
+        
+        const qrAmountEl = document.getElementById('qrAmount');
+        if (qrAmountEl) qrAmountEl.innerText = `₹${finalAmount}`;
         
         // Generate UPI QR using QRServer API
         const upiId = '9548706353@ibl'; // YOUR ACTUAL UPI ID
         const name = 'CleanKart Laundry';
-        const upiUrl = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(name)}&am=${total}&cu=INR`;
+        const upiUrl = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(name)}&am=${finalAmount}&cu=INR`;
         const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiUrl)}`;
         
-        document.getElementById('qrImage').src = qrUrl;
-        document.getElementById('upiDeepLink').href = upiUrl;
+        const qrImageEl = document.getElementById('qrImage');
+        if (qrImageEl) qrImageEl.src = qrUrl;
+        
+        const upiDeepLinkEl = document.getElementById('upiDeepLink');
+        if (upiDeepLinkEl) upiDeepLinkEl.href = upiUrl;
     } else {
         upiSection.classList.add('d-none');
     }

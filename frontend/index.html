@@ -1378,10 +1378,14 @@
                                             </label>
                                         </div>
                                     </div>
-                                    <div id="onlinePaymentArea" class="d-none">
-                                        <div class="p-3 rounded-3 bg-dark border border-info text-center">
-                                            <img src="images/qr.png" alt="UPI QR" class="img-fluid mb-2" style="max-width: 150px;">
-                                            <p class="small mb-0">Scan & Pay to <strong class="text-info">cleankart@upi</strong></p>
+                                    <div id="upiSection" class="d-none">
+                                        <div class="p-3 rounded-3 bg-dark border border-info text-center shadow-sm">
+                                            <img id="qrImage" src="" alt="UPI QR" class="img-fluid mb-3 rounded-3 border border-secondary p-2 bg-white" style="max-width: 180px;">
+                                            <div class="h6 text-white mb-2">Amount to Pay: <span class="text-info fw-bold" id="qrAmount">₹0</span></div>
+                                            <p class="small text-secondary mb-3">Scan & Pay using any UPI App (Google Pay, PhonePe, Paytm, BHIM)</p>
+                                            <div class="d-grid">
+                                                <a href="" id="upiDeepLink" class="btn btn-outline-info rounded-pill fw-bold btn-sm"><i class="fas fa-mobile-screen me-2"></i>Pay Directly via UPI App</a>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
