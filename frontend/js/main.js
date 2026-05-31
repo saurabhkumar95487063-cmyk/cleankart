@@ -2311,7 +2311,7 @@ function useSavedAddress(id) {
     });
 }
 
-async function saveAddress() {
+async function saveAddress(showSuccessToast = false) {
     if (!user) {
         notifyUser('Please login to save address', 'warning')
         return;
@@ -2355,7 +2355,9 @@ async function saveAddress() {
                     btn.classList.replace('btn-success', 'btn-outline-primary');
                 }, 3000);
             }
-            notifyUser('Address saved successfully!', 'info');
+            if (showSuccessToast) {
+                notifyUser('Address saved successfully!', 'info');
+            }
             fetchAddress(); // Refresh list
             return true;
         } else {
@@ -2365,7 +2367,7 @@ async function saveAddress() {
         }
     } catch (err) {
         console.error('Failed to save address');
-        notifyUser('Failed to save address', 'info')
+        notifyUser('Failed to save address', 'danger')
     }
     return false;
 }
@@ -2453,9 +2455,6 @@ async function placeOrder() {
         notifyUser('Please provide a delivery address', 'warning')
         return;
     }
-
-    // Auto-save address for future use
-    saveAddress();
 
     const isOnline = document.getElementById('payOnline').checked;
     const paymentMethod = isOnline ? 'Online (Razorpay)' : 'Cash on Delivery';
@@ -3310,7 +3309,6 @@ async function completeOrderPlacement(paymentInfo, addressData) {
         if (res.ok) {
             const order = await res.json();
             notifyUser('Order placed successfully!', 'success');
-            await saveAddress();
             sendWhatsAppNotification(order, addressData.mobile);
             cart = [];
             localStorage.removeItem('cart');
