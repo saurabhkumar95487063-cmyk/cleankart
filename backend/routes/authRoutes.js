@@ -7,8 +7,6 @@ const { protect } = require('../middleware/authMiddleware');
 
 router.post('/register', upload.single('kycDocument'), registerUser);
 router.post('/login', loginUser);
-router.post('/verify-signup', require('../controllers/authController').verifySignup);
-router.post('/forgotpassword', require('../controllers/authController').forgotPassword);
 router.post('/resetpassword', require('../controllers/authController').resetPassword);
 router.get('/profile', protect, getUserProfile);
 router.put('/profile', protect, updateUserProfile);
