@@ -1513,7 +1513,7 @@ function renderDeliveryDashboard(orders, cashInHand) {
     }
 
     if (user.role === 'pickup_agent') {
-        const availablePickups = orders.filter(o => ['Placed', 'Laundry Confirmed'].includes(o.status) && !o.pickupAgent);
+        const availablePickups = orders.filter(o => o.status === 'Laundry Confirmed' && !o.pickupAgent);
         const myPickups = orders.filter(o => (o.pickupAgent?._id === user._id || o.pickupAgent === user._id) && o.status !== 'Delivered');
 
         pickupOrders.innerHTML = `

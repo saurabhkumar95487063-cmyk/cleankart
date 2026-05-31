@@ -201,7 +201,7 @@ const getAllOrders = async (req, res) => {
         // ROLE-BASED DATA ISOLATION (Pooling & Claim System)
         if (req.user.role === 'pickup_agent') {
             query.$or = [
-                { status: { $in: ['Placed', 'Laundry Confirmed'] }, 'address.pincode': req.user.serviceArea, pickupAgent: { $exists: false } },
+                { status: 'Laundry Confirmed', 'address.pincode': req.user.serviceArea, pickupAgent: { $exists: false } },
                 { pickupAgent: req.user._id }
             ];
         } else if (req.user.role === 'delivery_agent') {
