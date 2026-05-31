@@ -1857,6 +1857,11 @@ function openCheckout() {
 
 async function goToStep(step) {
     if (step === 2) {
+        // Validate form inputs first before even attempting to save
+        const form = document.getElementById('addressForm');
+        if (form && !form.reportValidity()) {
+            return;
+        }
         // Validate and save address before moving to next step
         const saved = await saveAddress();
         if (!saved) return; // Don't proceed if saving failed (validation error, etc.)
@@ -2353,6 +2358,10 @@ async function saveAddress() {
             notifyUser('Address saved successfully!', 'info');
             fetchAddress(); // Refresh list
             return true;
+        } else {
+            const data = await res.json();
+            notifyUser(data.message || 'Failed to save address', 'danger');
+            return false;
         }
     } catch (err) {
         console.error('Failed to save address');
@@ -3301,7 +3310,7 @@ async function completeOrderPlacement(paymentInfo, addressData) {
         if (res.ok) {
             const order = await res.json();
             notifyUser('Order placed successfully!', 'success');
-            saveAddress();
+            await saveAddress();
             sendWhatsAppNotification(order, addressData.mobile);
             cart = [];
             localStorage.removeItem('cart');
@@ -3312,7 +3321,11 @@ async function completeOrderPlacement(paymentInfo, addressData) {
             const previewContainer = document.getElementById('garmentPicsPreview');
             if (previewContainer) previewContainer.innerHTML = '';
             
-            bootstrap.Modal.getInstance(document.getElementById('checkoutModal')).hide();
+            const checkoutModalEl = document.getElementById('checkoutModal');
+            if (checkoutModalEl) {
+                const checkoutModal = bootstrap.Modal.getInstance(checkoutModalEl) || new bootstrap.Modal(checkoutModalEl);
+                checkoutModal.hide();
+            }
             const cartSidebar = document.getElementById('cartSidebar');
             if (cartSidebar) {
                 const offcanvas = bootstrap.Offcanvas.getInstance(cartSidebar);
@@ -3320,6 +3333,9 @@ async function completeOrderPlacement(paymentInfo, addressData) {
             }
             showSection('myOrders');
             fetchOrders();
+        } else {
+            const data = await res.json();
+            notifyUser(data.message || 'Failed to place order.', 'danger');
         }
     } catch (err) {
         notifyUser('Failed to place order.', 'danger');
