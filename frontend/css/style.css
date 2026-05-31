@@ -383,6 +383,13 @@ header.sticky-top {
 .password-container input {
     padding-right: 45px;
 }
+
+/* Hide browser default password reveal button (Edge, IE) */
+.password-container input::-ms-reveal,
+.password-container input::-ms-clear {
+    display: none !important;
+}
+
 /* Mobile Responsiveness Fixes */
 @media (max-width: 991px) {
     .hero-section {
