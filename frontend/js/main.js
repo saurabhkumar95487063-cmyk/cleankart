@@ -2554,7 +2554,7 @@ async function placeOrder() {
     }
 
     const isOnline = document.getElementById('payOnline').checked;
-    const paymentMethod = isOnline ? 'Online (Razorpay)' : 'Cash on Delivery';
+    const paymentMethod = isOnline ? 'Online (UPI App)' : 'Cash on Delivery';
     
     const orderData = {
         items: cart,
@@ -2566,31 +2566,26 @@ async function placeOrder() {
 
     if (isOnline) {
         try {
-            const res = await fetch('/api/orders/razorpay-order', {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${user.token}`
-                },
-                body: JSON.stringify({ amount: totalPrice + 20 })
-            });
-            const rzpOrder = await res.json();
-            const options = {
-                "key": "rzp_test_placeholder", 
-                "amount": rzpOrder.amount,
-                "currency": "INR",
-                "name": "CleanKart",
-                "description": "Laundry Payment",
-                "order_id": rzpOrder.id,
-                "handler": (response) => completeOrderPlacement({
-                    paymentMethod: 'Online (Razorpay)',
-                    paymentId: response.razorpay_payment_id
-                }, addressData),
-                "prefill": { "name": user.name, "email": user.email, "contact": user.phone },
-                "theme": { "color": "#0ea5e9" }
-            };
-            new Razorpay(options).open();
-        } catch (err) { notifyUser('Payment Error', 'danger') }
+            // Read the actual grand total (including delivery fee & discounts)
+            const finalTotalEl = document.getElementById('finalTotal');
+            let finalAmountText = finalTotalEl ? finalTotalEl.innerText.replace('₹', '').trim() : '0';
+            let finalAmount = parseFloat(finalAmountText) || 0;
+            
+            const upiId = '9548706353@ibl';
+            const name = 'CleanKart Laundry';
+            const upiUrl = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(name)}&am=${finalAmount}&cu=INR`;
+            
+            // Redirect to launch UPI app chooser on mobile devices
+            window.location.href = upiUrl;
+            
+            // Proceed to complete order placement on our system
+            await completeOrderPlacement({
+                paymentMethod: 'Online (UPI App)',
+                paymentId: 'UPI-' + Date.now()
+            }, addressData);
+        } catch (err) {
+            notifyUser('Payment/Order placement Error', 'danger');
+        }
         return;
     }
     completeOrderPlacement({ paymentMethod: 'Cash on Delivery' }, addressData);
