@@ -57,8 +57,7 @@ const addOrderItems = async (req, res) => {
             deliveryFee: deliveryFee || 20,
             address,
             paymentMethod,
-            garmentImages,
-            laundryPartner: serviceablePartnerId
+            garmentImages
         });
 
         // AUTO-ASSIGN PICKUP AGENT DISABLED 
