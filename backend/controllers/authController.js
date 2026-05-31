@@ -208,4 +208,37 @@ const updateUserProfile = async (req, res) => {
     }
 };
 
+const resetPassword = async (req, res) => {
+    let { email, newPassword } = req.body;
+    if (!email) {
+        return res.status(400).json({ message: 'Email or phone number is required' });
+    }
+    if (!newPassword) {
+        return res.status(400).json({ message: 'New password is required' });
+    }
+
+    email = email.trim().toLowerCase();
+    const cleanEmail = cleanPhone(email);
+
+    const user = await User.findOne({
+        $or: [
+            { email: email },
+            { phone: email },
+            { phone: cleanEmail }
+        ]
+    });
+
+    if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+    }
+
+    user.password = newPassword;
+    user.resetPasswordOtp = undefined;
+    user.resetPasswordExpire = undefined;
+    await user.save();
+
+    res.json({ message: 'Password reset successful' });
+};
+
+
 module.exports = { registerUser, loginUser, getUserProfile, updateUserProfile, resetPassword };
