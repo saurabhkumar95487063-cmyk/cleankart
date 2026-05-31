@@ -6,42 +6,8 @@ let alarmAudioContext = null;
 let alarmIntervalId = null;
 
 function updateConnectionStatusBadge(status) {
-    let badge = document.getElementById('socketConnectionBadge');
-    if (!badge) {
-        badge = document.createElement('div');
-        badge.id = 'socketConnectionBadge';
-        badge.style.position = 'fixed';
-        badge.style.bottom = '15px';
-        badge.style.left = '15px';
-        badge.style.zIndex = '9999';
-        badge.style.fontSize = '0.65rem';
-        badge.style.padding = '5px 10px';
-        badge.style.borderRadius = '50px';
-        badge.style.fontWeight = 'bold';
-        badge.style.backdropFilter = 'blur(5px)';
-        badge.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.3)';
-        document.body.appendChild(badge);
-    }
-    
     // Expose playNotificationSound globally so that it can be triggered from inline onclick handlers
     window.playNotificationSound = playNotificationSound;
-    
-    if (status === 'connected') {
-        badge.style.background = 'rgba(22, 163, 74, 0.2)';
-        badge.style.border = '1px solid #22c55e';
-        badge.style.color = '#4ade80';
-        badge.innerHTML = `<span class="spinner-grow spinner-grow-sm me-1 text-success" style="width: 8px; height: 8px;"></span> Live Updates: Active`;
-    } else if (status === 'connecting') {
-        badge.style.background = 'rgba(234, 179, 8, 0.2)';
-        badge.style.border = '1px solid #eab308';
-        badge.style.color = '#fef08a';
-        badge.innerHTML = `<span class="spinner-border spinner-border-sm me-1 text-warning" style="width: 8px; height: 8px;"></span> Live Updates: Connecting...`;
-    } else {
-        badge.style.background = 'rgba(220, 38, 38, 0.2)';
-        badge.style.border = '1px solid #ef4444';
-        badge.style.color = '#fca5a5';
-        badge.innerHTML = `<i class="fas fa-exclamation-circle me-1"></i> Live Updates: Offline`;
-    }
 }
 
 function stopLoopingAlarm() {
