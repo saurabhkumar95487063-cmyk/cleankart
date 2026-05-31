@@ -1677,6 +1677,16 @@ async function renderServices(services) {
             ];
         }
 
+        // Sort categories in a predefined, natural retail order
+        const categoryOrder = ["Men's Wear", "Women's Wear", "Home & Others", "Premium Care"];
+        categories.sort((a, b) => {
+            const indexA = categoryOrder.indexOf(a.name);
+            const indexB = categoryOrder.indexOf(b.name);
+            if (indexA === -1) return 1;
+            if (indexB === -1) return -1;
+            return indexA - indexB;
+        });
+
         tabContainer.innerHTML = '';
         contentContainer.innerHTML = '';
 
@@ -2648,6 +2658,14 @@ async function loadCategoriesIntoSelect() {
                 <option value="Home & Others">Home & Others</option>
             `;
             if (categories && categories.length > 0) {
+                const categoryOrder = ["Men's Wear", "Women's Wear", "Home & Others", "Premium Care"];
+                categories.sort((a, b) => {
+                    const indexA = categoryOrder.indexOf(a.name);
+                    const indexB = categoryOrder.indexOf(b.name);
+                    if (indexA === -1) return 1;
+                    if (indexB === -1) return -1;
+                    return indexA - indexB;
+                });
                 html = categories.map(cat => `<option value="${cat.name}">${cat.name}</option>`).join('');
             }
             select.innerHTML = html;
