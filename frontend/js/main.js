@@ -738,16 +738,16 @@ async function fetchUserOrders() {
                     </div>
                     ` : ''}
                     ${
-                        ((['pickup assigned', 'picked'].includes(s) && o.pickupAgent) ||
-                         (['ready', 'dispatched', 'out for delivery'].includes(s) && o.deliveryAgent)) ? `
+                        ((s === 'pickup assigned' && o.pickupAgent) ||
+                         (['delivery assigned', 'out for delivery', 'dispatched'].includes(s) && o.deliveryAgent)) ? `
                     <div class="mb-3 p-3 rounded-3 bg-dark border-start border-info border-3">
                         <small class="text-secondary text-uppercase fw-bold" style="font-size: 0.65rem;">Assigned Agent</small>
                         <div class="d-flex align-items-center mt-1">
                             <div class="flex-grow-1">
-                                <div class="fw-bold text-success">${s.includes('ready') || s.includes('out') || s.includes('dispatch') ? escapeHtml(o.deliveryAgent.name) : escapeHtml(o.pickupAgent.name)}</div>
-                                <div class="small text-secondary">${s.includes('ready') || s.includes('out') || s.includes('dispatch') ? 'Delivery Partner' : 'Pickup Partner'}</div>
+                                <div class="fw-bold text-success">${s === 'pickup assigned' ? escapeHtml(o.pickupAgent.name) : escapeHtml(o.deliveryAgent.name)}</div>
+                                <div class="small text-secondary">${s === 'pickup assigned' ? 'Pickup Partner' : 'Delivery Partner'}</div>
                             </div>
-                            <a href="tel:${s.includes('ready') || s.includes('out') || s.includes('dispatch') ? o.deliveryAgent.phone : o.pickupAgent.phone}" class="btn btn-sm btn-success rounded-circle"><i class="fas fa-phone"></i></a>
+                            <a href="tel:${s === 'pickup assigned' ? o.pickupAgent.phone : o.deliveryAgent.phone}" class="btn btn-sm btn-success rounded-circle"><i class="fas fa-phone"></i></a>
                         </div>
                     </div>
                     ` : ''}
@@ -3219,8 +3219,8 @@ function updateDeliveryInfo(order) {
     const callBtn = document.getElementById('agentCallBtn');
     const statusMsg = document.getElementById('deliveryStatusMsg');
 
-    // Use deliveryAgent if status is ready/out/delivered, otherwise pickupAgent
-    const agent = (s.includes('ready') || s.includes('out') || s.includes('delivered') || s.includes('dispatch')) ? order.deliveryAgent : order.pickupAgent;
+    // Only show agent if they are currently active (on the way to pickup or delivery)
+    const agent = (s === 'pickup assigned') ? order.pickupAgent : (['delivery assigned', 'out for delivery', 'dispatched'].includes(s) ? order.deliveryAgent : null);
 
     if (agent) {
         console.log('AGENT FOUND IN FRONTEND:', agent);
@@ -3231,40 +3231,64 @@ function updateDeliveryInfo(order) {
             agentName = agent.name || 'CleanKart Agent';
             agentPhone = agent.phone || '';
         } else {
-            // It's just an ID string
             agentName = 'Agent Assigned (Loading...)';
         }
 
         if (nameDisplay) {
             nameDisplay.innerText = agentName;
-            nameDisplay.style.color = '#00ff00'; // Make it green to see if it changed
         }
-        if (roleDisplay) roleDisplay.innerText = (s.includes('ready') || s.includes('out')) ? 'Delivery Partner' : 'Pickup Partner';
+        if (roleDisplay) roleDisplay.innerText = (s === 'pickup assigned') ? 'Pickup Partner' : 'Delivery Partner';
         if (contactArea) contactArea.classList.remove('d-none');
         if (callBtn && agentPhone) callBtn.href = `tel:${agentPhone}`;
-        
-        if (statusMsg) {
-            statusMsg.classList.remove('text-info', 'text-success', 'blink');
-            if (s.includes('placed') || s.includes('assign')) {
-                statusMsg.innerText = 'Order pickup soon';
-                statusMsg.classList.add('text-warning', 'blink');
-            } else if (s.includes('ready')) {
-                statusMsg.innerText = 'Your order delivered soon';
-                statusMsg.classList.add('text-success', 'blink');
-            } else {
-                const displayStatus = order.status === 'Pending' ? 'Placed' : (order.status === 'Placed' ? 'Confirmed' : order.status);
-                statusMsg.innerText = `Status: ${displayStatus}`;
-                statusMsg.classList.add('text-info');
-            }
-        }
     } else {
-        console.log('No agent assigned yet for status:', s);
+        console.log('No active agent for status:', s);
         if (nameDisplay) nameDisplay.innerText = 'Awaiting Assignment';
         if (roleDisplay) roleDisplay.innerText = 'CleanKart Professional';
         if (contactArea) contactArea.classList.add('d-none');
-        if (statusMsg) {
-            statusMsg.innerText = 'Finding best agent for you...';
-            statusMsg.classList.remove('blink');
+    }
+
+    // Set custom status progress messages
+    if (statusMsg) {
+        statusMsg.classList.remove('text-info', 'text-success', 'text-warning', 'blink');
+        if (s === 'pending') {
+            statusMsg.innerText = 'Awaiting Admin Approval';
+            statusMsg.classList.add('text-warning', 'blink');
+        } else if (s === 'placed') {
+            statusMsg.innerText = 'Order confirmed by Admin';
+            statusMsg.classList.add('text-success');
+        } else if (s === 'laundry confirmed') {
+            statusMsg.innerText = 'Laundry Partner confirmed order';
+            statusMsg.classList.add('text-success');
+        } else if (s === 'pickup assigned') {
+            statusMsg.innerText = 'Pickup Partner is on the way';
+            statusMsg.classList.add('text-warning', 'blink');
+        } else if (s === 'picked' || s === 'picked up') {
+            statusMsg.innerText = 'Clothes collected by Pickup Partner';
+            statusMsg.classList.add('text-info');
+        } else if (s === 'dropped at laundry') {
+            statusMsg.innerText = 'Clothes dropped at Laundry Shop';
+            statusMsg.classList.add('text-info');
+        } else if (s === 'arrived' || s === 'arrived in laundry') {
+            statusMsg.innerText = 'Clothes arrived in Laundry Facility';
+            statusMsg.classList.add('text-info');
+        } else if (s === 'washing') {
+            statusMsg.innerText = 'Washing & cleaning in progress';
+            statusMsg.classList.add('text-info', 'blink');
+        } else if (s === 'ready') {
+            statusMsg.innerText = 'Order is Ready for Delivery';
+            statusMsg.classList.add('text-success');
+        } else if (s === 'delivery assigned') {
+            statusMsg.innerText = 'Delivery Partner is on the way to collect';
+            statusMsg.classList.add('text-warning', 'blink');
+        } else if (s === 'out for delivery' || s === 'dispatched') {
+            statusMsg.innerText = 'Order is out for Delivery';
+            statusMsg.classList.add('text-warning', 'blink');
+        } else if (s === 'delivered') {
+            statusMsg.innerText = 'Order Delivered successfully!';
+            statusMsg.classList.add('text-success');
+        } else {
+            const displayStatus = order.status === 'Pending' ? 'Placed' : (order.status === 'Placed' ? 'Confirmed' : order.status);
+            statusMsg.innerText = `Status: ${displayStatus}`;
             statusMsg.classList.add('text-info');
         }
     }
