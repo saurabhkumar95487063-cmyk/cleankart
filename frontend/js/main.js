@@ -310,6 +310,9 @@ function collapseNavbar() {
 }
 
 function showSection(sectionId) {
+    if (sectionId !== 'tracking') {
+        window.currentlyTrackingOrderId = null;
+    }
     collapseNavbar();
     const landingSections = ['home', 'services', 'about-us', 'how-it-works', 'why-us', 'faq', 'newsletter', 'feedbackSection'];
     const dashboards = ['adminDashboard', 'laundryDashboard', 'deliveryDashboard', 'myOrders', 'tracking'];
@@ -349,7 +352,28 @@ function showSection(sectionId) {
             // Special handling for specific sections
             if (sectionId === 'myOrders') fetchUserOrders();
             if (sectionId === 'tracking') {
-                // Any specific tracking init logic
+                if (!window.currentlyTrackingOrderId && user && user.token) {
+                    // Auto-track latest active order
+                    (async () => {
+                        try {
+                            const res = await fetch(`/api/orders/myorders?t=${Date.now()}`, {
+                                headers: { 'Authorization': `Bearer ${user.token}` }
+                            });
+                            const orders = await res.json();
+                            const activeOrder = orders.find(o => o.status !== 'Delivered' && o.status !== 'Cancelled' && o.status !== 'Rejected');
+                            if (activeOrder) {
+                                initTrackingMap(activeOrder._id, activeOrder.status);
+                            } else {
+                                notifyUser('You do not have any active orders to track. Showing your order history.', 'info');
+                                setTimeout(() => {
+                                    showSection('myOrders');
+                                }, 2000);
+                            }
+                        } catch (err) {
+                            console.error('Failed to auto-track latest order:', err);
+                        }
+                    })();
+                }
             }
         }
     }
@@ -1362,10 +1386,7 @@ function renderDeliveryDashboard(orders, cashInHand) {
                 } else if (o.status === 'Pickup Assigned') {
                     btnText = 'Boy On The Way';
                     colorClass = 'warning';
-                } else if (o.status === 'Picked') {
-                    btnText = 'With Pickup Boy';
-                    colorClass = 'warning';
-                } else if (o.status === 'Dropped at Laundry') {
+                } else if (o.status === 'Picked' || o.status === 'Dropped at Laundry') {
                     btnText = 'Confirm Order';
                     nextStatus = 'Arrived in Laundry';
                     colorClass = 'warning';
@@ -1384,7 +1405,7 @@ function renderDeliveryDashboard(orders, cashInHand) {
                     colorClass = 'secondary';
                 }
 
-                const isClickable = ['Arrived in Laundry', 'Washing', 'Dropped at Laundry'].includes(o.status);
+                const isClickable = ['Arrived in Laundry', 'Washing', 'Dropped at Laundry', 'Picked'].includes(o.status);
 
                 return `
                 <div class="col-md-6 col-lg-4 mb-3">
@@ -1402,6 +1423,13 @@ function renderDeliveryDashboard(orders, cashInHand) {
                             <small class="text-success fw-bold d-block mb-1" style="font-size: 0.65rem;"><i class="fas fa-truck me-1"></i>DELIVERY AGENT RECEIPT OTP</small>
                             <span class="fs-6 fw-bold text-white">${(parseInt(o._id.slice(-6), 16) * 7 % 9000 + 1000)}</span>
                             <div class="x-small text-secondary mt-1" style="font-size: 0.6rem;">Show to Delivery Boy upon handing over clean clothes</div>
+                        </div>
+                        ` : ''}
+                        ${['Picked', 'Dropped at Laundry'].includes(o.status) ? `
+                        <div class="mb-2 p-2 rounded bg-dark border border-warning text-center">
+                            <small class="text-warning fw-bold d-block mb-1" style="font-size: 0.65rem;"><i class="fas fa-store me-1"></i>LAUNDRY RECEIPT OTP</small>
+                            <span class="fs-6 fw-bold text-white">${(parseInt(o._id.slice(-6), 16) * 5 % 9000 + 1000)}</span>
+                            <div class="x-small text-secondary mt-1" style="font-size: 0.6rem;">Verify and use this OTP to confirm receipt of clothes from pickup agent</div>
                         </div>
                         ` : ''}
                         ${isClickable ? 
@@ -3030,6 +3058,9 @@ document.getElementById('profileForm')?.addEventListener('submit', async (e) => 
 async function initTrackingMap(orderId, currentStatus) {
     console.log('Tracking Start for Order:', orderId);
     console.log('Initializing tracking for:', orderId, currentStatus);
+    
+    window.currentlyTrackingOrderId = orderId;
+    showSection('tracking');
     
     const trackingSection = document.getElementById('tracking');
     if (!trackingSection) {
