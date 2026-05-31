@@ -150,14 +150,15 @@ function playNotificationSound() {
 
 function getSocket() {
     if (!trackingSocket) {
-        const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname) || window.location.hostname.startsWith('192.168.');
+        const isLocal = ['localhost', '127.0.0.1', ''].includes(window.location.hostname) || 
+                        window.location.hostname.startsWith('192.168.') || 
+                        window.location.hostname.startsWith('10.') || 
+                        window.location.hostname.startsWith('172.') ||
+                        window.location.protocol === 'file:';
         if (isLocal) {
-            // Construct backend URL based on current local hostname and backend port 5001 (e.g. for Live Server or local IP mobile testing)
-            if (window.location.port && window.location.port !== '5001') {
-                trackingSocket = io(`${window.location.protocol}//${window.location.hostname}:5001`);
-            } else {
-                trackingSocket = io();
-            }
+            // Construct backend URL based on current local hostname and backend port 5001 (supporting file view, Live Server, and local mobile IPs)
+            const host = window.location.hostname || 'localhost';
+            trackingSocket = io(`${window.location.protocol === 'https:' ? 'https:' : 'http:'}//${host}:5001`);
         } else {
             const backendUrl = window.BACKEND_URL || 'https://laundry-backend-4jl7.onrender.com';
             trackingSocket = io(backendUrl);
@@ -733,54 +734,58 @@ function updateAuthUI() {
                     console.log('Real-time orderUpdate event received:', data);
                     if (!user) return;
 
-                    let isRelevant = false;
-                    let notificationReason = '';
+                    const statusL = String(data.status || '').trim().toLowerCase();
+                    const pincodeL = String(data.pincode || '').trim();
+                    const serviceAreaL = String(user.serviceArea || '').trim();
 
+                    // Check relevance for auto-refreshing the dashboard view
+                    let shouldRefresh = false;
+                    
                     if (user.role === 'admin') {
-                        isRelevant = true;
-                        notificationReason = data.type === 'new_order' ? 'New order placed!' : 'Order status updated.';
+                        shouldRefresh = true;
                     } else if (user.role === 'laundry_partner') {
-                        // Relevant if Placed (available to claim) in their pincode, OR if they are the assigned laundry partner
-                        const isAvailableToClaim = (data.status === 'Placed') && (String(data.pincode) === String(user.serviceArea));
+                        const isAvailableToClaim = (statusL === 'placed') && (pincodeL === serviceAreaL);
                         const isAssignedToMe = data.laundryPartner && (String(data.laundryPartner) === String(user._id));
-                        
                         if (isAvailableToClaim || isAssignedToMe) {
-                            isRelevant = true;
-                            notificationReason = isAvailableToClaim ? 'New claimable order in your area!' : 'Your active order status updated.';
+                            shouldRefresh = true;
                         }
                     } else if (user.role === 'pickup_agent') {
-                        // Relevant if Laundry Confirmed (available for pickup) in their pincode, OR if they are the assigned pickup agent
-                        const isAvailablePickup = (data.status === 'Laundry Confirmed') && (String(data.pincode) === String(user.serviceArea));
+                        const isAvailablePickup = (statusL === 'laundry confirmed') && (pincodeL === serviceAreaL);
                         const isAssignedToMe = data.pickupAgent && (String(data.pickupAgent) === String(user._id));
-                        
                         if (isAvailablePickup || isAssignedToMe) {
-                            isRelevant = true;
-                            notificationReason = isAvailablePickup ? 'New pickup task in your area!' : 'Your active pickup status updated.';
+                            shouldRefresh = true;
                         }
                     } else if (user.role === 'delivery_agent') {
-                        // Relevant if Ready (available for delivery) in their pincode, OR if they are the assigned delivery agent
-                        const isAvailableDelivery = (data.status === 'Ready') && (String(data.pincode) === String(user.serviceArea));
+                        const isAvailableDelivery = (statusL === 'ready') && (pincodeL === serviceAreaL);
                         const isAssignedToMe = data.deliveryAgent && (String(data.deliveryAgent) === String(user._id));
-                        
                         if (isAvailableDelivery || isAssignedToMe) {
-                            isRelevant = true;
-                            notificationReason = isAvailableDelivery ? 'New delivery task in your area!' : 'Your active delivery status updated.';
+                            shouldRefresh = true;
                         }
-                    } else if (user.role === 'user') {
-                        // Relevant only if it is their order
-                        // statusUpdate room checks cover this, but as fallback check user orders refresh
-                        isRelevant = false; 
                     }
 
-                    if (isRelevant) {
-                        // Trigger sound notification (looping alarm for operators, single chime for others)
-                        if (['admin', 'laundry_partner', 'pickup_agent', 'delivery_agent'].includes(user.role)) {
+                    // Check if we should ring the alarm based on the user's specific trigger requirements
+                    let shouldRingAlarm = false;
+                    if (user.role === 'admin' && statusL === 'pending') {
+                        shouldRingAlarm = true;
+                        notificationReason = 'New order placed! Awaiting Approval.';
+                    } else if (user.role === 'laundry_partner' && statusL === 'placed' && pincodeL === serviceAreaL) {
+                        shouldRingAlarm = true;
+                        notificationReason = 'Admin confirmed order! Claim it now.';
+                    } else if (user.role === 'pickup_agent' && statusL === 'laundry confirmed' && pincodeL === serviceAreaL) {
+                        shouldRingAlarm = true;
+                        notificationReason = 'Order claimed by Laundry! Ready for pickup.';
+                    } else if (user.role === 'delivery_agent' && statusL === 'ready' && pincodeL === serviceAreaL) {
+                        shouldRingAlarm = true;
+                        notificationReason = 'Laundry ready! Available for delivery.';
+                    }
+
+                    if (shouldRefresh) {
+                        // Trigger sound alarm if it matches the specific workflow step
+                        if (shouldRingAlarm) {
                             startLoopingAlarm();
-                        } else {
-                            playNotificationSound();
                         }
                         
-                        // Show a toast message informing the user
+                        // Show toast notification
                         let toastMsg = 'Dashboard auto-refreshed!';
                         if (notificationReason) {
                             toastMsg = `${notificationReason} Auto-refreshed.`;
