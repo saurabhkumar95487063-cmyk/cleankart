@@ -122,9 +122,10 @@ const loginUser = async (req, res) => {
         return res.status(401).json({ message: 'Please enter correct password' });
     }
 
-    // If both correct
-    if (user.isVerified === false && user.role !== 'admin') {
-        return res.status(401).json({ message: 'Please verify your account first', userId: user._id });
+    // Auto-verify legacy users if needed
+    if (user.isVerified === false) {
+        user.isVerified = true;
+        await user.save();
     }
     if (user.status === 'pending') {
         return res.status(401).json({ message: 'Account pending approval by admin' });
