@@ -916,16 +916,72 @@ function renderTodayOrdersList(orders) {
     }).join('') || '<tr><td colspan="5" class="text-center py-4 text-secondary"><i class="fas fa-inbox me-2"></i>No new orders waiting for approval</td></tr>';
 }
 
-window.adminConfirmOrder = async function(orderId) {
-    if (confirm('Are you sure you want to confirm this order?')) {
-        await updateStatus(orderId, 'Placed');
-    }
+window.showConfirmModal = function({ title, message, confirmText = 'Yes, Proceed', cancelText = 'Cancel', confirmBtnClass = 'btn-success', onConfirm }) {
+    // Remove any existing confirm modal
+    const existing = document.getElementById('dynamicConfirmModal');
+    if (existing) existing.remove();
+
+    const modalHtml = `
+        <div class="modal fade" id="dynamicConfirmModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content bg-glass border border-secondary text-white rounded-4 shadow-lg p-3">
+                    <div class="modal-header border-0 pb-1">
+                        <h5 class="modal-title fw-bold d-flex align-items-center">
+                            <i class="fas fa-circle-question me-2 text-warning fs-4"></i> ${title}
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body border-0 py-2">
+                        <p class="text-secondary mb-0 fs-6">${message}</p>
+                    </div>
+                    <div class="modal-footer border-0 pt-2 d-flex gap-2 justify-content-end">
+                        <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">${cancelText}</button>
+                        <button type="button" id="dynamicConfirmBtn" class="btn ${confirmBtnClass} px-4 rounded-pill fw-bold">${confirmText}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+    const modalEl = document.getElementById('dynamicConfirmModal');
+    const modal = new bootstrap.Modal(modalEl);
+    
+    document.getElementById('dynamicConfirmBtn').addEventListener('click', async () => {
+        modal.hide();
+        if (onConfirm) await onConfirm();
+    });
+
+    modalEl.addEventListener('hidden.bs.modal', () => {
+        modalEl.remove();
+    });
+
+    modal.show();
 };
 
-window.adminRejectOrder = async function(orderId) {
-    if (confirm('Are you sure you want to reject/cancel this order?')) {
-        await updateStatus(orderId, 'Cancelled');
-    }
+window.adminConfirmOrder = function(orderId) {
+    window.showConfirmModal({
+        title: 'Confirm Order',
+        message: `Are you sure you want to <strong>confirm</strong> Order #${orderId.slice(-6).toUpperCase()}? This will update its status to Placed.`,
+        confirmText: 'Confirm Order',
+        confirmBtnClass: 'btn-success',
+        onConfirm: async () => {
+            await updateStatus(orderId, 'Placed');
+        }
+    });
+};
+
+window.adminRejectOrder = function(orderId) {
+    window.showConfirmModal({
+        title: 'Reject Order',
+        message: `Are you sure you want to <strong>reject/cancel</strong> Order #${orderId.slice(-6).toUpperCase()}? This will cancel the order.`,
+        confirmText: 'Reject/Cancel Order',
+        confirmBtnClass: 'btn-danger',
+        onConfirm: async () => {
+            await updateStatus(orderId, 'Cancelled');
+        }
+    });
 };
 
 function filterOrders() {
