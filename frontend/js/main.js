@@ -42,7 +42,12 @@ function getSocket() {
     if (!trackingSocket) {
         const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname) || window.location.hostname.startsWith('192.168.');
         if (isLocal) {
-            trackingSocket = io();
+            // Construct backend URL based on current local hostname and backend port 5001 (e.g. for Live Server or local IP mobile testing)
+            if (window.location.port && window.location.port !== '5001') {
+                trackingSocket = io(`${window.location.protocol}//${window.location.hostname}:5001`);
+            } else {
+                trackingSocket = io();
+            }
         } else {
             const backendUrl = window.BACKEND_URL || 'https://laundry-backend-4jl7.onrender.com';
             trackingSocket = io(backendUrl);
@@ -597,7 +602,7 @@ function updateAuthUI() {
         // Join User Room for real-time notifications
         try {
             if (typeof io !== 'undefined') {
-                if (!trackingSocket) trackingSocket = io();
+                trackingSocket = getSocket();
                 trackingSocket.emit('joinUserRoom', user._id);
                 
                 // Real-time status updates for specific users
@@ -3089,9 +3094,7 @@ function startTrackingOrder(orderId) {
     
     initLeafletMap();
     
-    if (!trackingSocket) {
-        trackingSocket = io();
-    }
+    trackingSocket = getSocket();
     
     trackingSocket.emit('joinTrackingRoom', orderId);
     
@@ -3132,7 +3135,7 @@ function toggleLocationSharing(btnElement) {
         btn.innerText = 'Stop Sharing Location';
         btn.classList.replace('btn-warning', 'btn-danger');
         
-        if (!trackingSocket) trackingSocket = io();
+        trackingSocket = getSocket();
         
         locationWatchId = navigator.geolocation.watchPosition((position) => {
             const { latitude: lat, longitude: lng } = position.coords;
