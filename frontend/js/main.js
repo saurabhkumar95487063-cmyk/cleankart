@@ -689,7 +689,7 @@ async function fetchUserOrders() {
                 <div class="p-4 rounded-4 bg-glass border border-secondary shadow-sm h-100 d-flex flex-column">
                     <div class="d-flex justify-content-between mb-3">
                         <span class="badge bg-primary">Order #${o._id.slice(-6)}</span>
-                        <span class="badge ${o.status === 'Delivered' ? 'bg-success' : (isRejected ? 'bg-danger' : 'bg-warning')}">${o.status}</span>
+                        <span class="badge ${o.status === 'Delivered' ? 'bg-success' : (isRejected ? 'bg-danger' : 'bg-warning')}">${o.status === 'Pending' ? 'Placed' : (o.status === 'Placed' ? 'Confirmed' : o.status)}</span>
                     </div>
                     
                     <!-- Integrated Mini Tracker -->
@@ -3161,7 +3161,8 @@ async function initTrackingMap(orderId, currentStatus) {
         trackingSocket.on('statusUpdate', async (data) => {
             if (data.orderId === orderId) {
                 renderOrderProgress(data.status);
-                notifyUser(`Order Status: ${data.status}`, 'info')
+                const displayStatus = data.status === 'Pending' ? 'Placed' : (data.status === 'Placed' ? 'Confirmed' : data.status);
+                notifyUser(`Order Status: ${displayStatus}`, 'info')
                 // Re-fetch to update agent details
                 await fetchAndRefreshAgentInfo(orderId);
             }
@@ -3251,7 +3252,8 @@ function updateDeliveryInfo(order) {
                 statusMsg.innerText = 'Your order delivered soon';
                 statusMsg.classList.add('text-success', 'blink');
             } else {
-                statusMsg.innerText = `Status: ${order.status}`;
+                const displayStatus = order.status === 'Pending' ? 'Placed' : (order.status === 'Placed' ? 'Confirmed' : order.status);
+                statusMsg.innerText = `Status: ${displayStatus}`;
                 statusMsg.classList.add('text-info');
             }
         }
