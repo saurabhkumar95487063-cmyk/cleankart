@@ -754,6 +754,7 @@ async function fetchDeliveryOrders() {
         const orders = await res.json();
         console.log('Orders received:', orders.length);
         
+        let cashInHand = 0;
         // Fetch Earnings Stats
         try {
             const statsRes = await fetch('/api/orders/stats', {
@@ -777,9 +778,11 @@ async function fetchDeliveryOrders() {
             if (aToday) aToday.innerText = `₹${stats.todayEarnings}`;
             if (aMain) aMain.innerText = `₹${stats.mainWallet}`;
             if (aCash) aCash.innerText = `₹${stats.cashInHand || 0}`;
+            
+            cashInHand = stats.cashInHand || 0;
         } catch (e) { console.error('Stats fetch error:', e); }
 
-        renderDeliveryDashboard(orders);
+        renderDeliveryDashboard(orders, cashInHand);
     } catch (err) {
         console.error('Error fetching partner orders:', err);
     }
@@ -1293,7 +1296,7 @@ function filterPartners() {
 
 
 
-function renderDeliveryDashboard(orders) {
+function renderDeliveryDashboard(orders, cashInHand) {
     const pickupOrders = document.getElementById('pickupOrders');
     const deliveryOrders = document.getElementById('deliveryOrders');
     const processingOrders = document.getElementById('processingOrders');
@@ -1504,10 +1507,18 @@ function renderDeliveryDashboard(orders) {
     }
 
     if (user.role === 'delivery_agent') {
-        const availableDeliveries = orders.filter(o => o.status === 'Ready' && !o.deliveryAgent);
+        const isBlocked = (cashInHand || 0) >= 1500;
+        const availableDeliveries = isBlocked ? [] : orders.filter(o => o.status === 'Ready' && !o.deliveryAgent);
         const myDeliveries = orders.filter(o => (o.deliveryAgent?._id === user._id || o.deliveryAgent === user._id) && o.status !== 'Delivered');
 
         deliveryOrders.innerHTML = `
+            ${isBlocked ? `
+            <div class="alert alert-danger border border-danger rounded-3 p-3 mb-3 text-center shadow-sm">
+                <i class="fas fa-exclamation-triangle fa-2x mb-2 text-danger blink"></i>
+                <h6 class="fw-bold text-white mb-1">Dues Exceeded: Account Locked</h6>
+                <p class="small text-secondary mb-0">Your cash in hand is <strong>₹${cashInHand}</strong>, which exceeds the limit of <strong>₹1500</strong>. Please settle your collected cash with the Admin to resume claiming new delivery tasks.</p>
+            </div>
+            ` : ''}
             <div class="mb-3">
                 <h6 class="text-warning"><i class="fas fa-bell me-2"></i>Available Deliveries</h6>
             </div>

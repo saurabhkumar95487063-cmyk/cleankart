@@ -127,6 +127,10 @@ const updateOrderStatus = async (req, res) => {
         } else if (status === 'Pickup Assigned' && req.user.role === 'pickup_agent') {
             order.pickupAgent = req.user._id;
         } else if (status === 'Delivery Assigned' && req.user.role === 'delivery_agent') {
+            if (req.user.cashInHand >= 1500) {
+                res.status(400).json({ message: 'Order claim blocked: Your Cash in Hand exceeds ₹1500. Please settle your collected cash with the administrator to accept new deliveries.' });
+                return;
+            }
             order.deliveryAgent = req.user._id;
         }
 
@@ -201,10 +205,14 @@ const getAllOrders = async (req, res) => {
                 { pickupAgent: req.user._id }
             ];
         } else if (req.user.role === 'delivery_agent') {
-            query.$or = [
-                { status: 'Ready', 'address.pincode': req.user.serviceArea, deliveryAgent: { $exists: false } },
-                { deliveryAgent: req.user._id }
-            ];
+            if (req.user.cashInHand >= 1500) {
+                query = { deliveryAgent: req.user._id };
+            } else {
+                query.$or = [
+                    { status: 'Ready', 'address.pincode': req.user.serviceArea, deliveryAgent: { $exists: false } },
+                    { deliveryAgent: req.user._id }
+                ];
+            }
         } else if (req.user.role === 'laundry_partner') {
             query.$or = [
                 { status: 'Placed', 'address.pincode': req.user.serviceArea, laundryPartner: { $exists: false } },
