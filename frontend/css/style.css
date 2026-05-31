@@ -385,9 +385,11 @@ header.sticky-top {
 }
 
 /* Hide browser default password reveal button (Edge, IE) */
-.password-container input::-ms-reveal,
-.password-container input::-ms-clear {
+::-ms-reveal,
+::-ms-clear {
     display: none !important;
+    width: 0 !important;
+    height: 0 !important;
 }
 
 /* Mobile Responsiveness Fixes */
