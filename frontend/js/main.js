@@ -278,10 +278,19 @@ document.getElementById('partnerForm').addEventListener('submit', async (e) => {
     }
 });
 
-function togglePassword(inputId, icon) {
-    // Primary handler for password visibility toggling
-    const input = document.getElementById(inputId);
+// Password Toggle logic (Global delegation)
+document.addEventListener('click', function(e) {
+    const icon = e.target.closest('.toggle-password');
+    if (!icon) return;
+    
+    const container = icon.closest('.password-container');
+    if (!container) return;
+    
+    const input = container.querySelector('input');
     if (!input) return;
+    
+    e.preventDefault();
+    e.stopPropagation();
 
     if (input.type === 'password') {
         input.type = 'text';
@@ -292,7 +301,7 @@ function togglePassword(inputId, icon) {
         icon.classList.remove('fa-eye-slash');
         icon.classList.add('fa-eye');
     }
-}
+});
 
 function collapseNavbar() {
     const navbarCollapse = document.getElementById('navbarNav');
