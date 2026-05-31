@@ -1152,7 +1152,7 @@
                             <label class="form-label">Password</label>
                             <div class="password-container">
                                 <input type="password" class="form-control bg-dark text-white border-secondary" id="loginPassword" autocomplete="off" spellcheck="false" required>
-                                <i class="fa-solid fa-eye toggle-password"></i>
+                                <i class="fa-solid fa-eye toggle-password" onclick="togglePassword('loginPassword', this)"></i>
                             </div>
                             <div class="text-end mt-2">
                                 <a href="javascript:void(0)" onclick="openForgotModal()" class="small text-info text-decoration-none">Forgot Password?</a>
@@ -1209,7 +1209,7 @@
                             <label class="form-label">Create Password</label>
                             <div class="password-container">
                                 <input type="password" class="form-control bg-dark text-white border-secondary" id="signupPassword" placeholder="Min 6 characters" required>
-                                <i class="fa-solid fa-eye toggle-password"></i>
+                                <i class="fa-solid fa-eye toggle-password" onclick="togglePassword('signupPassword', this)"></i>
                             </div>
                         </div>
                         <button type="submit" class="btn btn-primary w-100 py-2">Create Account</button>
@@ -1568,7 +1568,7 @@
                             <label class="small text-secondary mb-1">New Password</label>
                             <div class="password-container">
                                 <input type="password" class="form-control bg-dark text-white border-secondary" id="newPassword" placeholder="Min 6 characters" required>
-                                <i class="fa-solid fa-eye toggle-password"></i>
+                                <i class="fa-solid fa-eye toggle-password" onclick="togglePassword('newPassword', this)"></i>
                             </div>
                         </div>
                         <button class="btn btn-primary w-100 py-2 fw-bold" onclick="resetPasswordDirect()">Reset Password</button>

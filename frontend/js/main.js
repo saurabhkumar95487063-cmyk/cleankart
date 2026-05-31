@@ -278,31 +278,8 @@ document.getElementById('partnerForm').addEventListener('submit', async (e) => {
     }
 });
 
-// Password Toggle logic (Global)
-document.addEventListener('click', function(e) {
-    if (e.target && e.target.classList.contains('toggle-password')) {
-        const icon = e.target;
-        const container = icon.closest('.password-container');
-        if (!container) return;
-        
-        const input = container.querySelector('input');
-        if (!input) return;
-
-        if (input.type === 'password') {
-            input.type = 'text';
-            icon.classList.remove('fa-eye');
-            icon.classList.add('fa-eye-slash');
-        } else {
-            input.type = 'password';
-            icon.classList.remove('fa-eye-slash');
-            icon.classList.add('fa-eye');
-        }
-    }
-});
-
 function togglePassword(inputId, icon) {
-    // Keeping this for backward compatibility if needed, 
-    // but the global listener above is now the primary handler.
+    // Primary handler for password visibility toggling
     const input = document.getElementById(inputId);
     if (!input) return;
 
