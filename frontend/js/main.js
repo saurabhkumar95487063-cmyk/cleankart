@@ -3330,7 +3330,7 @@ async function completeOrderPlacement(paymentInfo, addressData) {
                 if (offcanvas) offcanvas.hide();
             }
             showSection('myOrders');
-            fetchOrders();
+            fetchUserOrders();
         } else {
             const data = await res.json();
             notifyUser(data.message || 'Failed to place order.', 'danger');
