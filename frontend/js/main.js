@@ -825,9 +825,7 @@ function updateAuthUI() {
                     notifyUser(`Order #${data.orderId.slice(-6)} is now ${data.status}!`, 'success');
                     if (user.role === 'user') {
                         fetchUserOrders();
-                        playNotificationSound();
-                    } else if (['admin', 'laundry_partner', 'pickup_agent', 'delivery_agent'].includes(user.role)) {
-                        startLoopingAlarm();
+                        playNotificationSound(); // Standard customers only receive a quick chime
                     }
                 });
                 
@@ -848,21 +846,21 @@ function updateAuthUI() {
                     if (user.role === 'admin') {
                         shouldRefresh = true;
                     } else if (user.role === 'laundry_partner') {
-                        const isAvailableToClaim = (statusL === 'placed') && (pincodeL === serviceAreaL);
+                        const isRelevantPincode = (pincodeL === serviceAreaL);
                         const isAssignedToMe = data.laundryPartner && (String(data.laundryPartner) === String(user._id));
-                        if (isAvailableToClaim || isAssignedToMe) {
+                        if (isRelevantPincode || isAssignedToMe) {
                             shouldRefresh = true;
                         }
                     } else if (user.role === 'pickup_agent') {
-                        const isAvailablePickup = (statusL === 'laundry confirmed') && (pincodeL === serviceAreaL);
+                        const isRelevantPincode = (pincodeL === serviceAreaL);
                         const isAssignedToMe = data.pickupAgent && (String(data.pickupAgent) === String(user._id));
-                        if (isAvailablePickup || isAssignedToMe) {
+                        if (isRelevantPincode || isAssignedToMe) {
                             shouldRefresh = true;
                         }
                     } else if (user.role === 'delivery_agent') {
-                        const isAvailableDelivery = (statusL === 'ready') && (pincodeL === serviceAreaL);
+                        const isRelevantPincode = (pincodeL === serviceAreaL);
                         const isAssignedToMe = data.deliveryAgent && (String(data.deliveryAgent) === String(user._id));
-                        if (isAvailableDelivery || isAssignedToMe) {
+                        if (isRelevantPincode || isAssignedToMe) {
                             shouldRefresh = true;
                         }
                     }
@@ -887,6 +885,9 @@ function updateAuthUI() {
                         // Trigger sound alarm if it matches the specific workflow step
                         if (shouldRingAlarm) {
                             startLoopingAlarm();
+                        } else {
+                            // Automatically stop any looping alarm when the actionable task is resolved or no longer active
+                            stopLoopingAlarm();
                         }
                         
                         // Show toast notification
@@ -2113,6 +2114,7 @@ async function updateStatus(orderId, status, bypassOtp = false, pickupInspection
         if (res.ok) {
             const updatedOrder = await res.json();
             notifyUser(`Order status updated to ${status}`, 'success');
+            stopLoopingAlarm(); // Instantly turn off any looping alarm when user successfully updates order status
             
             // Trigger automated WhatsApp/Message alerts on state transitions
             if (typeof sendAutomatedPartnerNotification === 'function') {
@@ -3081,6 +3083,7 @@ async function updateOrderStatusAdmin(id, status) {
         });
         if (res.ok) {
             notifyUser('Order status updated!', 'info')
+            stopLoopingAlarm(); // Instantly turn off any looping alarm when admin successfully updates order status
             fetchAdminOrders();
         }
     } catch (err) {
