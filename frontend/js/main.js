@@ -664,7 +664,7 @@ async function fetchUserOrders() {
             
             let uiIdx = 0;
             if (s === 'pending') uiIdx = 0;
-            else if (s === 'placed') uiIdx = 1;
+            else if (s === 'placed' || s === 'laundry confirmed' || s === 'pickup assigned') uiIdx = 1;
             else if (s === 'picked' || s === 'picked up' || s === 'dropped at laundry') uiIdx = 2;
             else if (s === 'arrived' || s === 'arrived in laundry') uiIdx = 3;
             else if (s === 'washing' || s === 'wash' || s === 'in process') uiIdx = 4;
@@ -3277,7 +3277,7 @@ function renderOrderProgress(status) {
     
     let uiIdx = 0;
     if (s === 'pending') uiIdx = 0;
-    else if (s === 'placed') uiIdx = 1;
+    else if (s === 'placed' || s === 'laundry confirmed' || s === 'pickup assigned') uiIdx = 1;
     else if (s === 'picked' || s === 'picked up' || s === 'dropped at laundry') uiIdx = 2;
     else if (s === 'arrived' || s === 'arrived in laundry') uiIdx = 3;
     else if (s === 'washing' || s === 'wash' || s === 'in process') uiIdx = 4;
