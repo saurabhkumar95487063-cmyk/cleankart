@@ -636,17 +636,22 @@ async function fetchUserOrders() {
         const list = document.getElementById('orderHistoryList');
         list.innerHTML = orders.map(o => {
             const s = o.status.trim().toLowerCase();
+            const isRejected = (s === 'cancelled' || s === 'rejected');
+            
             let uiIdx = 0;
-            if (s === 'placed' || s === 'pending') uiIdx = 0;
-            else if (s === 'picked' || s === 'picked up' || s === 'dropped at laundry') uiIdx = 1;
-            else if (s === 'arrived' || s === 'arrived in laundry') uiIdx = 2;
-            else if (s === 'washing' || s === 'wash' || s === 'in process') uiIdx = 3;
-            else if (s === 'ready' || s === 'delivery assigned') uiIdx = 4;
-            else if (s === 'dispatched' || s === 'out for delivery') uiIdx = 5;
-            else if (s === 'delivered') uiIdx = 6;
+            if (s === 'pending') uiIdx = 0;
+            else if (s === 'placed') uiIdx = 1;
+            else if (s === 'picked' || s === 'picked up' || s === 'dropped at laundry') uiIdx = 2;
+            else if (s === 'arrived' || s === 'arrived in laundry') uiIdx = 3;
+            else if (s === 'washing' || s === 'wash' || s === 'in process') uiIdx = 4;
+            else if (s === 'ready' || s === 'delivery assigned') uiIdx = 5;
+            else if (s === 'dispatched' || s === 'out for delivery') uiIdx = 6;
+            else if (s === 'delivered') uiIdx = 7;
+            else if (isRejected) uiIdx = 0;
 
             const steps = [
-                { id: 'placed', label: 'Placed' },
+                { id: 'placed', label: isRejected ? 'Rejected' : 'Placed' },
+                { id: 'confirmed', label: 'Confirmed' },
                 { id: 'picked', label: 'Picked' },
                 { id: 'arrived', label: 'Arrived' },
                 { id: 'wash', label: 'Wash' },
@@ -660,21 +665,29 @@ async function fetchUserOrders() {
                 <div class="p-4 rounded-4 bg-glass border border-secondary shadow-sm h-100 d-flex flex-column">
                     <div class="d-flex justify-content-between mb-3">
                         <span class="badge bg-primary">Order #${o._id.slice(-6)}</span>
-                        <span class="badge ${o.status === 'Delivered' ? 'bg-success' : 'bg-warning'}">${o.status}</span>
+                        <span class="badge ${o.status === 'Delivered' ? 'bg-success' : (isRejected ? 'bg-danger' : 'bg-warning')}">${o.status}</span>
                     </div>
                     
                     <!-- Integrated Mini Tracker -->
                     <div class="mb-4 mt-2">
                         <div class="d-flex justify-content-between position-relative px-1">
-                            <div class="position-absolute border-top border-2" style="top: 10px; left: 10%; right: 10%; z-index: 0; border-color: #334155 !important;"></div>
-                            ${steps.map((step, idx) => `
-                                <div class="text-center" style="z-index: 1; width: 20%;">
-                                    <div class="rounded-circle mx-auto mb-1" style="width: 20px; height: 20px; border: 2px solid ${idx <= uiIdx ? '#0d6efd' : '#334155'}; background: ${idx <= uiIdx ? '#0d6efd' : '#0f172a'};">
-                                        ${idx <= uiIdx ? '<i class="fas fa-check text-white" style="font-size: 10px;"></i>' : ''}
+                            <div class="position-absolute border-top border-2" style="top: 10px; left: 6%; right: 6%; z-index: 0; border-color: #334155 !important;"></div>
+                            ${steps.map((step, idx) => {
+                                const isActive = idx <= uiIdx;
+                                const isCurrentReject = isRejected && idx === uiIdx;
+                                const borderClr = isActive ? (isCurrentReject ? '#ef4444' : '#0d6efd') : '#334155';
+                                const bgClr = isActive ? (isCurrentReject ? '#ef4444' : '#0d6efd') : '#0f172a';
+                                const textClr = isActive ? (isCurrentReject ? 'text-danger fw-bold' : 'text-primary') : 'text-secondary';
+                                const icon = isActive ? (isCurrentReject ? '<i class="fas fa-times text-white" style="font-size: 8px;"></i>' : '<i class="fas fa-check text-white" style="font-size: 8px;"></i>') : '';
+                                return `
+                                <div class="text-center" style="z-index: 1; width: 12.5%;">
+                                    <div class="rounded-circle mx-auto mb-1 d-flex align-items-center justify-content-center" style="width: 18px; height: 18px; border: 2px solid ${borderClr}; background: ${bgClr};">
+                                        ${icon}
                                     </div>
-                                    <div class="x-small ${idx <= uiIdx ? 'text-primary' : 'text-secondary'}" style="font-size: 0.65rem;">${step.label}</div>
+                                    <div class="x-small ${textClr}" style="font-size: 0.55rem; letter-spacing: -0.5px;">${step.label}</div>
                                 </div>
-                            `).join('')}
+                                `;
+                            }).join('')}
                         </div>
                     </div>
 
@@ -3149,21 +3162,25 @@ function updateDeliveryInfo(order) {
 function renderOrderProgress(status) {
     if (!status) return;
     const s = status.trim().toLowerCase();
+    const isRejected = (s === 'cancelled' || s === 'rejected');
     
     let uiIdx = 0;
-    if (s === 'placed' || s === 'pending') uiIdx = 0;
-    else if (s === 'picked' || s === 'picked up' || s === 'dropped at laundry') uiIdx = 1;
-    else if (s === 'arrived' || s === 'arrived in laundry') uiIdx = 2;
-    else if (s === 'washing' || s === 'wash' || s === 'in process') uiIdx = 3;
-    else if (s === 'ready' || s === 'delivery assigned') uiIdx = 4;
-    else if (s === 'dispatched' || s === 'out for delivery') uiIdx = 5;
-    else if (s === 'delivered') uiIdx = 6;
+    if (s === 'pending') uiIdx = 0;
+    else if (s === 'placed') uiIdx = 1;
+    else if (s === 'picked' || s === 'picked up' || s === 'dropped at laundry') uiIdx = 2;
+    else if (s === 'arrived' || s === 'arrived in laundry') uiIdx = 3;
+    else if (s === 'washing' || s === 'wash' || s === 'in process') uiIdx = 4;
+    else if (s === 'ready' || s === 'delivery assigned') uiIdx = 5;
+    else if (s === 'dispatched' || s === 'out for delivery') uiIdx = 6;
+    else if (s === 'delivered') uiIdx = 7;
+    else if (isRejected) uiIdx = 0;
 
-    console.log('Rendering progress for index:', uiIdx);
+    console.log('Rendering progress for index:', uiIdx, 'Rejected:', isRejected);
 
-    const stepIds = ['step-placed', 'step-picked', 'step-arrived', 'step-washing', 'step-ready', 'step-dispatched', 'step-delivered'];
+    const stepIds = ['step-placed', 'step-confirmed', 'step-picked', 'step-arrived', 'step-washing', 'step-ready', 'step-dispatched', 'step-delivered'];
     const activeColor = '#3b82f6'; // Bright Blue
     const inactiveColor = '#475569'; // Slate Grey
+    const rejectColor = '#ef4444'; // Red
 
     stepIds.forEach((id, index) => {
         const el = document.getElementById(id);
@@ -3172,10 +3189,19 @@ function renderOrderProgress(status) {
         const text = el.querySelector('.step-text');
         
         el.classList.remove('active');
+        
+        if (id === 'step-placed') {
+            if (text) text.innerText = isRejected ? 'Rejected' : 'Placed';
+        }
 
         if (index <= uiIdx) {
-            if (dot) dot.style.backgroundColor = activeColor;
-            if (text) text.style.color = activeColor;
+            if (isRejected && index === uiIdx) {
+                if (dot) dot.style.backgroundColor = rejectColor;
+                if (text) text.style.color = rejectColor;
+            } else {
+                if (dot) dot.style.backgroundColor = activeColor;
+                if (text) text.style.color = activeColor;
+            }
             if (index === uiIdx) el.classList.add('active'); // Add pulse to current step
         } else {
             if (dot) dot.style.backgroundColor = inactiveColor;
@@ -3185,7 +3211,7 @@ function renderOrderProgress(status) {
 
     const line = document.getElementById('progress-line');
     if (line) {
-        line.style.borderColor = uiIdx > 0 ? activeColor : inactiveColor;
+        line.style.borderColor = uiIdx > 0 && !isRejected ? activeColor : inactiveColor;
     }
 }
 function notifyUser(message, type = 'primary') {
