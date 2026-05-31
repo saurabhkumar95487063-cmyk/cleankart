@@ -372,7 +372,9 @@ header.sticky-top {
     cursor: pointer !important;
     z-index: 999 !important;
     color: #64748b;
-    padding: 10px !important;
+    padding: 8px !important;
+    background-color: #1a1d24 !important; /* Masks underlying browser-native icons */
+    border-radius: 4px;
     pointer-events: auto !important;
 }
 
