@@ -2132,6 +2132,11 @@ document.getElementById('signupForm').addEventListener('submit', async (e) => {
     const password = document.getElementById('signupPassword').value;
     clearFormError('signupErrorAlert');
 
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Sending OTP...';
+
     try {
         const res = await fetch('/api/auth/register', {
             method: 'POST',
@@ -2163,6 +2168,9 @@ document.getElementById('signupForm').addEventListener('submit', async (e) => {
         }
     } catch (err) {
         showFormError('signupErrorAlert', 'signupErrorMsg', 'Signup failed.');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
     }
 });
 
@@ -2221,6 +2229,11 @@ async function sendResetOtp() {
     clearFormError('forgotReqErrorAlert');
     if (!identifier) return showFormError('forgotReqErrorAlert', 'forgotReqErrorMsg', 'Please enter email or phone');
 
+    const submitBtn = document.querySelector('#otpRequestArea button');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Sending OTP...';
+
     try {
         const res = await fetch('/api/auth/forgotpassword', {
             method: 'POST',
@@ -2237,6 +2250,9 @@ async function sendResetOtp() {
         }
     } catch (err) {
         showFormError('forgotReqErrorAlert', 'forgotReqErrorMsg', 'Server error');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
     }
 }
 
