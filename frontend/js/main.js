@@ -2,6 +2,116 @@ let cart = JSON.parse(localStorage.getItem('cart')) || [];
 let user = JSON.parse(localStorage.getItem('user')) || null;
 let trackingSocket = null;
 
+let alarmAudioContext = null;
+let alarmIntervalId = null;
+
+function stopLoopingAlarm() {
+    if (alarmIntervalId) {
+        clearInterval(alarmIntervalId);
+        alarmIntervalId = null;
+    }
+    if (alarmAudioContext) {
+        try {
+            alarmAudioContext.close();
+        } catch (e) {}
+        alarmAudioContext = null;
+    }
+    const banner = document.getElementById('alarmAlertBanner');
+    if (banner) banner.remove();
+}
+window.stopLoopingAlarm = stopLoopingAlarm;
+
+function startLoopingAlarm() {
+    try {
+        stopLoopingAlarm(); // Ensure any existing alarm is stopped
+        
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        
+        alarmAudioContext = new AudioContext();
+        
+        // Dynamic premium glassmorphic alert banner
+        const banner = document.createElement('div');
+        banner.id = 'alarmAlertBanner';
+        banner.style.position = 'fixed';
+        banner.style.top = '20px';
+        banner.style.left = '50%';
+        banner.style.transform = 'translateX(-50%)';
+        banner.style.zIndex = '99999';
+        banner.style.width = '90%';
+        banner.style.maxWidth = '450px';
+        banner.style.background = 'rgba(15, 23, 42, 0.95)';
+        banner.style.border = '2px solid #ef4444';
+        banner.style.borderRadius = '12px';
+        banner.style.boxShadow = '0 0 20px rgba(239, 68, 68, 0.5)';
+        banner.style.padding = '16px';
+        banner.style.color = '#fff';
+        banner.style.backdropFilter = 'blur(10px)';
+        banner.style.animation = 'pulse-border 1.5s infinite';
+        
+        if (!document.getElementById('alarmAnimationStyles')) {
+            const style = document.createElement('style');
+            style.id = 'alarmAnimationStyles';
+            style.innerHTML = `
+                @keyframes pulse-border {
+                    0% { box-shadow: 0 0 10px rgba(239, 68, 68, 0.4); }
+                    50% { box-shadow: 0 0 25px rgba(239, 68, 68, 0.8); }
+                    100% { box-shadow: 0 0 10px rgba(239, 68, 68, 0.4); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        banner.innerHTML = `
+            <div class="d-flex align-items-center justify-content-between gap-3">
+                <div class="text-start">
+                    <h6 class="mb-1 text-danger fw-bold"><i class="fas fa-bell me-2 blink text-danger"></i>NEW ACTION REQUIRED</h6>
+                    <p class="small text-secondary mb-0" style="font-size: 0.75rem;">Your dashboard has updated. Review now to stop alarm.</p>
+                </div>
+                <button class="btn btn-danger btn-sm fw-bold px-3 py-2 rounded-pill shadow" onclick="stopLoopingAlarm()"><i class="fas fa-volume-mute me-1"></i>Stop Alarm</button>
+            </div>
+        `;
+        document.body.appendChild(banner);
+
+        // Sound loop trigger
+        alarmIntervalId = setInterval(() => {
+            if (!alarmAudioContext) return;
+            const now = alarmAudioContext.currentTime;
+            
+            const osc1 = alarmAudioContext.createOscillator();
+            const gain1 = alarmAudioContext.createGain();
+            osc1.type = 'sine';
+            osc1.frequency.setValueAtTime(987.77, now); // B5 note
+            gain1.gain.setValueAtTime(0, now);
+            gain1.gain.linearRampToValueAtTime(0.25, now + 0.05);
+            gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+            osc1.connect(gain1);
+            gain1.connect(alarmAudioContext.destination);
+            osc1.start(now);
+            osc1.stop(now + 0.3);
+            
+            setTimeout(() => {
+                if (!alarmAudioContext) return;
+                const now2 = alarmAudioContext.currentTime;
+                const osc2 = alarmAudioContext.createOscillator();
+                const gain2 = alarmAudioContext.createGain();
+                osc2.type = 'sine';
+                osc2.frequency.setValueAtTime(1318.51, now2); // E6 note
+                gain2.gain.setValueAtTime(0, now2);
+                gain2.gain.linearRampToValueAtTime(0.25, now2 + 0.05);
+                gain2.gain.exponentialRampToValueAtTime(0.001, now2 + 0.25);
+                osc2.connect(gain2);
+                gain2.connect(alarmAudioContext.destination);
+                osc2.start(now2);
+                osc2.stop(now2 + 0.3);
+            }, 150);
+            
+        }, 1500);
+    } catch (e) {
+        console.error('Failed to start looping alarm:', e);
+    }
+}
+
 function playNotificationSound() {
     try {
         const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -9,11 +119,11 @@ function playNotificationSound() {
         const ctx = new AudioContext();
         const now = ctx.currentTime;
         
-        // Double electronic chime ding-dong using oscillator nodes
+        // Double electronic chime ding-dong for standard customer notification
         const osc1 = ctx.createOscillator();
         const gain1 = ctx.createGain();
         osc1.type = 'sine';
-        osc1.frequency.setValueAtTime(880, now); // A5 note
+        osc1.frequency.setValueAtTime(880, now);
         gain1.gain.setValueAtTime(0, now);
         gain1.gain.linearRampToValueAtTime(0.3, now + 0.05);
         gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
@@ -25,7 +135,7 @@ function playNotificationSound() {
         const osc2 = ctx.createOscillator();
         const gain2 = ctx.createGain();
         osc2.type = 'sine';
-        osc2.frequency.setValueAtTime(1109.73, now + 0.12); // C#6 note
+        osc2.frequency.setValueAtTime(1109.73, now + 0.12);
         gain2.gain.setValueAtTime(0, now + 0.12);
         gain2.gain.linearRampToValueAtTime(0.3, now + 0.17);
         gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
@@ -609,8 +719,12 @@ function updateAuthUI() {
                 trackingSocket.off('statusUpdate');
                 trackingSocket.on('statusUpdate', (data) => {
                     notifyUser(`Order #${data.orderId.slice(-6)} is now ${data.status}!`, 'success');
-                    if (user.role === 'user') fetchUserOrders();
-                    playNotificationSound();
+                    if (user.role === 'user') {
+                        fetchUserOrders();
+                        playNotificationSound();
+                    } else if (['admin', 'laundry_partner', 'pickup_agent', 'delivery_agent'].includes(user.role)) {
+                        startLoopingAlarm();
+                    }
                 });
                 
                 // Real-time order updates for auto-refreshing admin/partners
@@ -619,7 +733,11 @@ function updateAuthUI() {
                     console.log('Real-time orderUpdate event received:', data);
                     
                     // Trigger sound notification
-                    playNotificationSound();
+                    if (user && ['admin', 'laundry_partner', 'pickup_agent', 'delivery_agent'].includes(user.role)) {
+                        startLoopingAlarm();
+                    } else {
+                        playNotificationSound();
+                    }
                     
                     // Show a toast message informing the user
                     let toastMsg = 'Dashboard auto-refreshed!';
