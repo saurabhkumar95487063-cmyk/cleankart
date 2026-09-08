@@ -39,6 +39,9 @@ body {
 /* Sub Category Pill Styles */
 .sub-category-pill {
     transition: all 0.3s ease;
+    font-size: 0.78rem !important;
+    white-space: nowrap !important;
+    padding: 4px 12px !important;
 }
 .sub-category-pill.active {
     background-color: #0dcaf0 !important;
