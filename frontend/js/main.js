@@ -729,8 +729,7 @@ function updateAuthUI() {
             if (deliveryDashboard) deliveryDashboard.classList.add('d-none');
             if (laundryDashboard) laundryDashboard.classList.add('d-none');
             if (adminDashboard) adminDashboard.classList.add('d-none');
-            if (myOrders) myOrders.classList.remove('d-none');
-            fetchUserOrders();
+            if (myOrders) myOrders.classList.add('d-none');
         }
 
         // Join User Room for real-time notifications
