@@ -3140,6 +3140,26 @@ async function fetchAdminServices() {
     }
 }
 
+function toggleSubCategoryVisibility() {
+    const select = document.getElementById('serviceCategory');
+    const subCatContainer = document.getElementById('serviceSubCategoryContainer');
+    if (!select || !subCatContainer) return;
+
+    if (select.value === 'Premium Care') {
+        subCatContainer.style.display = 'block';
+        const subCatSelect = document.getElementById('serviceSubCategory');
+        if (subCatSelect && (!subCatSelect.value || subCatSelect.value === '')) {
+            subCatSelect.value = "Men's Premium Care";
+        }
+    } else {
+        subCatContainer.style.display = 'none';
+        const subCatSelect = document.getElementById('serviceSubCategory');
+        if (subCatSelect) subCatSelect.value = '';
+    }
+}
+
+document.getElementById('serviceCategory')?.addEventListener('change', toggleSubCategoryVisibility);
+
 function prepareServiceForm() {
     document.getElementById('serviceForm').reset();
     document.getElementById('serviceId').value = '';
@@ -3148,10 +3168,6 @@ function prepareServiceForm() {
     // Show all input containers for adding a new service
     document.getElementById('serviceNameContainer').style.display = 'block';
     document.getElementById('serviceCategoryContainer').style.display = 'block';
-    const subCatContainer = document.getElementById('serviceSubCategoryContainer');
-    if (subCatContainer) subCatContainer.style.display = 'block';
-    const subCatEl = document.getElementById('serviceSubCategory');
-    if (subCatEl) subCatEl.value = '';
     document.getElementById('serviceIconContainer').style.display = 'block';
     document.getElementById('serviceImageContainer').style.display = 'block';
     
@@ -3186,6 +3202,7 @@ async function loadCategoriesIntoSelect() {
                 html = categories.map(cat => `<option value="${cat.name}">${cat.name}</option>`).join('');
             }
             select.innerHTML = html;
+            toggleSubCategoryVisibility();
         }
     } catch (err) { console.error('Failed to load categories'); }
 }
