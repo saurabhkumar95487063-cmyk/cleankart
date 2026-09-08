@@ -47,7 +47,7 @@ body {
     transition: all 0.3s ease;
     font-size: 0.78rem !important;
     white-space: nowrap !important;
-    padding: 4px 12px !important;
+    padding: 4px 10px !important;
 }
 .sub-category-pill.active {
     background-color: #0dcaf0 !important;
