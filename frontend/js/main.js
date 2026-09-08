@@ -2189,13 +2189,17 @@ async function renderServices(services) {
 
                     // Sub-category classification for filtering
                     let subCatKey = '';
+                    let cardStyle = '';
                     if (cat.name === 'Premium Care') {
                         const subCat = getPremiumSubCategory(item);
                         subCatKey = subCat.includes('Men') ? 'mens' : 'womens';
+                        if (subCatKey !== 'mens') {
+                            cardStyle = 'style="display: none;"';
+                        }
                     }
 
                     servicesHtml += `
-                        <div class="col-6 col-md-4 col-lg-3 service-card-wrapper" data-subcategory="${subCatKey}">
+                        <div class="col-6 col-md-4 col-lg-3 service-card-wrapper" data-subcategory="${subCatKey}" ${cardStyle}>
                             <div class="service-card p-3 text-center mb-4">
                                 <div class="icon-container">
                                     ${iconHtml}
@@ -2218,10 +2222,7 @@ async function renderServices(services) {
                 subCategoryPillsHtml = `
                     <div class="col-12 mb-3 text-center">
                         <div class="d-inline-flex justify-content-center gap-2 flex-wrap p-2 rounded-pill bg-darker border border-secondary shadow-sm" id="subCategoryPills-${catId}">
-                            <button type="button" class="btn btn-sm btn-outline-info rounded-pill px-3 py-1 fw-semibold sub-category-pill active" onclick="filterSubCategory('all', '${catId}', this)">
-                                <i class="fas fa-tags me-1"></i> All Premium Care
-                            </button>
-                            <button type="button" class="btn btn-sm btn-outline-info rounded-pill px-3 py-1 fw-semibold sub-category-pill" onclick="filterSubCategory('mens', '${catId}', this)">
+                            <button type="button" class="btn btn-sm btn-outline-info rounded-pill px-3 py-1 fw-semibold sub-category-pill active" onclick="filterSubCategory('mens', '${catId}', this)">
                                 <i class="fas fa-mars me-1"></i> Men's Premium Care
                             </button>
                             <button type="button" class="btn btn-sm btn-outline-info rounded-pill px-3 py-1 fw-semibold sub-category-pill" onclick="filterSubCategory('womens', '${catId}', this)">
