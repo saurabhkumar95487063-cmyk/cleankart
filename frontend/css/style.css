@@ -36,6 +36,12 @@ body {
     color: rgba(255, 255, 255, 0.4) !important;
 }
 
+.form-select option, select option {
+    background-color: #1e293b !important;
+    color: #ffffff !important;
+    padding: 8px 12px;
+}
+
 /* Sub Category Pill Styles */
 .sub-category-pill {
     transition: all 0.3s ease;
