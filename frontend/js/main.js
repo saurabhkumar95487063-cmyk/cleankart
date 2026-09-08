@@ -2220,8 +2220,8 @@ async function renderServices(services) {
             let subCategoryPillsHtml = '';
             if (cat.name === 'Premium Care' && catServices.length > 0) {
                 subCategoryPillsHtml = `
-                    <div class="col-12 mb-3 text-center">
-                        <ul class="nav nav-pills justify-content-center gap-2" id="subCategoryPills-${catId}">
+                    <div class="col-12 mb-3 text-center overflow-auto">
+                        <ul class="nav nav-pills justify-content-center align-items-center flex-nowrap gap-1 gap-sm-2" id="subCategoryPills-${catId}">
                             <li class="nav-item">
                                 <button type="button" class="nav-link sub-category-pill active" onclick="filterSubCategory('mens', '${catId}', this)">
                                     <i class="fas fa-mars me-1"></i> Men's Premium Care
