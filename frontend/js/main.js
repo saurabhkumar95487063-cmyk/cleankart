@@ -2221,14 +2221,18 @@ async function renderServices(services) {
             if (cat.name === 'Premium Care' && catServices.length > 0) {
                 subCategoryPillsHtml = `
                     <div class="col-12 mb-3 text-center">
-                        <div class="d-inline-flex align-items-center justify-content-center gap-2 flex-nowrap px-3 py-1.5 rounded-pill bg-darker border border-secondary shadow-sm" id="subCategoryPills-${catId}">
-                            <button type="button" class="btn btn-sm btn-outline-info rounded-pill px-2.5 py-1 fw-semibold sub-category-pill active" onclick="filterSubCategory('mens', '${catId}', this)">
-                                <i class="fas fa-mars me-1"></i> Men's Premium Care
-                            </button>
-                            <button type="button" class="btn btn-sm btn-outline-info rounded-pill px-2.5 py-1 fw-semibold sub-category-pill" onclick="filterSubCategory('womens', '${catId}', this)">
-                                <i class="fas fa-venus me-1"></i> Women's Premium Care
-                            </button>
-                        </div>
+                        <ul class="nav nav-pills justify-content-center gap-2" id="subCategoryPills-${catId}">
+                            <li class="nav-item">
+                                <button type="button" class="nav-link sub-category-pill active" onclick="filterSubCategory('mens', '${catId}', this)">
+                                    <i class="fas fa-mars me-1"></i> Men's Premium Care
+                                </button>
+                            </li>
+                            <li class="nav-item">
+                                <button type="button" class="nav-link sub-category-pill" onclick="filterSubCategory('womens', '${catId}', this)">
+                                    <i class="fas fa-venus me-1"></i> Women's Premium Care
+                                </button>
+                            </li>
+                        </ul>
                     </div>
                 `;
             }
