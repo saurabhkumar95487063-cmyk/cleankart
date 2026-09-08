@@ -1486,17 +1486,51 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content bg-dark text-white border-secondary">
                 <div class="modal-header border-secondary">
-                    <h5 class="modal-title">Add New Category</h5>
+                    <h5 class="modal-title"><i class="fas fa-folder-plus text-info me-2"></i>Add New Category</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-4">
                     <form id="categoryForm">
                         <div class="mb-3">
-                            <label class="form-label">Category Name</label>
-                            <input type="text" class="form-control bg-dark text-white border-secondary" id="categoryName" placeholder="e.g. Ironing Only" required>
+                            <label class="form-label fw-semibold">Category Name</label>
+                            <input type="text" class="form-control bg-dark text-white border-secondary" id="catName" placeholder="e.g. Shoes & Bags" required>
                         </div>
-                        <button type="submit" class="btn btn-info w-100 text-dark fw-bold">Add Category</button>
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Category Icon (FontAwesome Class)</label>
+                            <input type="text" class="form-control bg-dark text-white border-secondary" id="catIcon" placeholder="e.g. fas fa-socks" value="fas fa-tags">
+                        </div>
+                        <button type="submit" class="btn btn-info w-100 text-dark fw-bold py-2"><i class="fas fa-plus-circle me-2"></i>Add Category</button>
                     </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Service Options Modal -->
+    <div class="modal fade" id="serviceOptionsModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-dark text-white border-secondary">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title text-info" id="serviceOptionTitle">Options</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="list-group" id="serviceOptionsList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- KYC Viewer Modal -->
+    <div class="modal fade" id="kycViewerModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content bg-dark text-white border-secondary">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title text-primary"><i class="fas fa-id-card me-2"></i>KYC Document Viewer</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-3 text-center">
+                    <img id="kycFullImage" src="" class="img-fluid rounded border border-secondary" alt="KYC Document" style="max-height: 80vh;">
                 </div>
             </div>
         </div>

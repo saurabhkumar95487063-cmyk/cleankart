@@ -344,11 +344,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Filter Services
         const searchInput = document.getElementById('serviceSearch');
-        if (category === 'all') {
-            searchInput.value = '';
-            searchServices();
-        } else {
-            searchInput.value = category;
+        if (searchInput) {
+            searchInput.value = (category === 'all') ? '' : category;
+        }
+        if (typeof searchServices === 'function') {
             searchServices();
         }
     };
@@ -3130,10 +3129,17 @@ async function loadCategoriesIntoSelect() {
 
 document.getElementById('categoryForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const data = {
-        name: document.getElementById('catName').value,
-        icon: document.getElementById('catIcon').value
-    };
+    const catNameEl = document.getElementById('catName') || document.getElementById('categoryName');
+    const catIconEl = document.getElementById('catIcon') || document.getElementById('categoryIcon');
+    const name = catNameEl ? catNameEl.value.trim() : '';
+    const icon = (catIconEl && catIconEl.value.trim()) ? catIconEl.value.trim() : 'fas fa-tags';
+
+    if (!name) {
+        notifyUser('Category name is required', 'warning');
+        return;
+    }
+
+    const data = { name, icon };
     try {
         const res = await fetch('/api/categories', {
             method: 'POST',
@@ -3144,15 +3150,20 @@ document.getElementById('categoryForm')?.addEventListener('submit', async (e) =>
             body: JSON.stringify(data)
         });
         if (res.ok) {
-            notifyUser('Category added successfully!', 'success')
+            notifyUser('Category added successfully!', 'success');
             document.getElementById('categoryForm').reset();
-            bootstrap.Modal.getInstance(document.getElementById('categoryModal')).hide();
-            loadCategoriesIntoSelect();
+            const modalEl = document.getElementById('categoryModal');
+            if (modalEl) {
+                const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                if (modal) modal.hide();
+            }
+            await loadCategoriesIntoSelect();
+            if (typeof fetchServices === 'function') fetchServices();
         } else {
             const err = await res.json();
-            notifyUser(err.message || 'Failed to add category', 'info')
+            notifyUser(err.message || 'Failed to add category', 'info');
         }
-    } catch (err) { notifyUser('Error adding category', 'danger') }
+    } catch (err) { notifyUser('Error adding category', 'danger'); }
 });
 
 async function editService(id) {
