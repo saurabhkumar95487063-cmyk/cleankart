@@ -11,7 +11,8 @@ const serviceSchema = mongoose.Schema({
         }
     ],
     image: { type: String, default: 'placeholder.png' },
-    icon: { type: String, default: 'fas fa-shirt' }
+    icon: { type: String, default: 'fas fa-shirt' },
+    subCategory: { type: String, default: '' }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Service', serviceSchema);

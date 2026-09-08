@@ -2092,6 +2092,37 @@ async function fetchServices() {
     }
 }
 
+function getPremiumSubCategory(item) {
+    if (item.subCategory) return item.subCategory;
+    const nameLower = (item.name || '').toLowerCase();
+    if (nameLower.includes('saree') || nameLower.includes('lehenga') || nameLower.includes('gown') || nameLower.includes('kurti') || nameLower.includes('women') || nameLower.includes('dress') || nameLower.includes('suit salwar')) {
+        return "Women's Premium Care";
+    }
+    return "Men's Premium Care";
+}
+
+window.filterSubCategory = function(subType, tabId, btnElement) {
+    const container = document.getElementById(`subCategoryPills-${tabId}`);
+    if (container) {
+        container.querySelectorAll('.sub-category-pill').forEach(btn => btn.classList.remove('active'));
+        if (btnElement) {
+            btnElement.classList.add('active');
+        }
+    }
+    const tabPane = document.getElementById(`tab-${tabId}`);
+    if (!tabPane) return;
+
+    const cards = tabPane.querySelectorAll('.service-card-wrapper');
+    cards.forEach(card => {
+        const sub = card.dataset.subcategory;
+        if (subType === 'all' || !sub || sub === subType) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+};
+
 async function renderServices(services) {
     const tabContainer = document.getElementById('categoryTabs');
     const contentContainer = document.getElementById('categoryTabContent');
@@ -2156,8 +2187,15 @@ async function renderServices(services) {
                         ? `<img src="${iconClass}" alt="${item.name}">` 
                         : `<i class="${iconClass}"></i>`;
 
+                    // Sub-category classification for filtering
+                    let subCatKey = '';
+                    if (cat.name === 'Premium Care') {
+                        const subCat = getPremiumSubCategory(item);
+                        subCatKey = subCat.includes('Men') ? 'mens' : 'womens';
+                    }
+
                     servicesHtml += `
-                        <div class="col-6 col-md-4 col-lg-3">
+                        <div class="col-6 col-md-4 col-lg-3 service-card-wrapper" data-subcategory="${subCatKey}">
                             <div class="service-card p-3 text-center mb-4">
                                 <div class="icon-container">
                                     ${iconHtml}
@@ -2175,9 +2213,29 @@ async function renderServices(services) {
                 });
             }
 
+            let subCategoryPillsHtml = '';
+            if (cat.name === 'Premium Care' && catServices.length > 0) {
+                subCategoryPillsHtml = `
+                    <div class="col-12 mb-3 text-center">
+                        <div class="d-inline-flex justify-content-center gap-2 flex-wrap p-2 rounded-pill bg-darker border border-secondary shadow-sm" id="subCategoryPills-${catId}">
+                            <button type="button" class="btn btn-sm btn-outline-info rounded-pill px-3 py-1 fw-semibold sub-category-pill active" onclick="filterSubCategory('all', '${catId}', this)">
+                                <i class="fas fa-tags me-1"></i> All Premium Care
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-info rounded-pill px-3 py-1 fw-semibold sub-category-pill" onclick="filterSubCategory('mens', '${catId}', this)">
+                                <i class="fas fa-mars me-1"></i> Men's Premium Care
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-info rounded-pill px-3 py-1 fw-semibold sub-category-pill" onclick="filterSubCategory('womens', '${catId}', this)">
+                                <i class="fas fa-venus me-1"></i> Women's Premium Care
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+
             contentContainer.innerHTML += `
                 <div class="tab-pane fade ${isShowActive}" id="tab-${catId}">
                     <div class="row g-4">
+                        ${subCategoryPillsHtml}
                         ${servicesHtml}
                     </div>
                 </div>
@@ -3089,6 +3147,10 @@ function prepareServiceForm() {
     // Show all input containers for adding a new service
     document.getElementById('serviceNameContainer').style.display = 'block';
     document.getElementById('serviceCategoryContainer').style.display = 'block';
+    const subCatContainer = document.getElementById('serviceSubCategoryContainer');
+    if (subCatContainer) subCatContainer.style.display = 'block';
+    const subCatEl = document.getElementById('serviceSubCategory');
+    if (subCatEl) subCatEl.value = '';
     document.getElementById('serviceIconContainer').style.display = 'block';
     document.getElementById('serviceImageContainer').style.display = 'block';
     
@@ -3182,6 +3244,8 @@ async function editService(id) {
     // Hide all other containers so only Price can be edited
     document.getElementById('serviceNameContainer').style.display = 'none';
     document.getElementById('serviceCategoryContainer').style.display = 'none';
+    const subCatContainer = document.getElementById('serviceSubCategoryContainer');
+    if (subCatContainer) subCatContainer.style.display = 'none';
     document.getElementById('serviceIconContainer').style.display = 'none';
     document.getElementById('serviceImageContainer').style.display = 'none';
     
@@ -3217,6 +3281,10 @@ document.getElementById('serviceForm')?.addEventListener('submit', async (e) => 
     const formData = new FormData();
     formData.append('name', document.getElementById('serviceName').value);
     formData.append('category', document.getElementById('serviceCategory').value);
+    const subCatEl = document.getElementById('serviceSubCategory');
+    if (subCatEl) {
+        formData.append('subCategory', subCatEl.value);
+    }
     formData.append('price', document.getElementById('servicePrice').value);
     formData.append('icon', document.getElementById('serviceIcon').value);
     

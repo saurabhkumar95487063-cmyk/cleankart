@@ -36,9 +36,18 @@ body {
     color: rgba(255, 255, 255, 0.4) !important;
 }
 
-.form-select option {
-    background-color: #1e293b !important;
-    color: white !important;
+/* Sub Category Pill Styles */
+.sub-category-pill {
+    transition: all 0.3s ease;
+}
+.sub-category-pill.active {
+    background-color: #0dcaf0 !important;
+    color: #000 !important;
+    font-weight: 700 !important;
+    box-shadow: 0 0 12px rgba(13, 202, 240, 0.4);
+}
+.sub-category-pill:hover:not(.active) {
+    background-color: rgba(13, 202, 240, 0.15);
 }
 
 /* Tracking Stepper Styles */

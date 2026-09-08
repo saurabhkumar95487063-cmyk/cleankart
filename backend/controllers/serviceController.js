@@ -11,7 +11,7 @@ const getServices = async (req, res) => {
 
 const createService = async (req, res) => {
     try {
-        const { category, name, price, icon } = req.body;
+        const { category, subCategory, name, price, icon } = req.body;
         let iconPath = icon;
         
         if (req.file) {
@@ -20,6 +20,7 @@ const createService = async (req, res) => {
 
         const service = new Service({ 
             category, 
+            subCategory: subCategory || '',
             name, 
             price: Number(price), 
             icon: iconPath 
@@ -33,10 +34,11 @@ const createService = async (req, res) => {
 
 const updateService = async (req, res) => {
     try {
-        const { category, name, price, icon } = req.body;
+        const { category, subCategory, name, price, icon } = req.body;
         const service = await Service.findById(req.params.id);
         if (service) {
             service.category = category || service.category;
+            if (subCategory !== undefined) service.subCategory = subCategory;
             service.name = name || service.name;
             service.price = price ? Number(price) : service.price;
             
