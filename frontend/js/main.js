@@ -2322,7 +2322,8 @@ function getItemSubCategoryKey(item) {
         return cleanSub;
     }
 
-    if (category === 'Premium Care') {
+    const catLower = (category || '').toLowerCase();
+    if (catLower.includes('premium')) {
         if (subCatLower.includes('kid') || nameLower.includes('kid') || nameLower.includes('child') || nameLower.includes('baby') || nameLower.includes('boy') || nameLower.includes('girl')) {
             return 'kids';
         }
@@ -2362,7 +2363,7 @@ function getItemSubCategoryLabel(item, categoryName) {
     const cat = categoryName || item.category || '';
     let sub = item.subCategory && item.subCategory.trim() ? item.subCategory.trim() : '';
 
-    if (cat === 'Premium Care') {
+    if ((cat || '').toLowerCase().includes('premium')) {
         return sub || getPremiumSubCategory(item);
     }
 
@@ -2459,14 +2460,24 @@ async function renderServices(services) {
             `;
 
             // Render Content Pane
-            const catServices = services.filter(s => s.category === cat.name);
+            const catNameLower = (cat.name || '').toLowerCase().trim();
+            const catServices = services.filter(s => {
+                const sCatLower = (s.category || '').toLowerCase().trim();
+                if (sCatLower === catNameLower) return true;
+                if (sCatLower.includes('premium') && catNameLower.includes('premium')) return true;
+                if (sCatLower.includes('women') && catNameLower.includes('women')) return true;
+                if (sCatLower.includes('men') && !sCatLower.includes('women') && catNameLower.includes('men') && !catNameLower.includes('women')) return true;
+                if (sCatLower.includes('kid') && catNameLower.includes('kid')) return true;
+                if (sCatLower.includes('home') && catNameLower.includes('home')) return true;
+                return false;
+            });
             let servicesHtml = '';
             
             // Determine default active subCategory key for this category
             let defaultSubCatKey = '';
-            if (cat.name === 'Premium Care') {
+            if (catNameLower.includes('premium')) {
                 defaultSubCatKey = 'mens';
-            } else if (["Men's Wear", "Women's Wear", "Kids", "Kids Wear", "Home & Others"].includes(cat.name)) {
+            } else if (["Men's Wear", "Women's Wear", "Kids", "Kids Wear", "Home & Others"].includes(cat.name) || catNameLower.includes('women') || catNameLower.includes('men') || catNameLower.includes('kid') || catNameLower.includes('home')) {
                 defaultSubCatKey = 'summer';
             }
             
@@ -2542,7 +2553,7 @@ async function renderServices(services) {
                             </ul>
                         </div>
                     `;
-                } else if (cat.name === 'Premium Care') {
+                } else if (catNameLower.includes('premium')) {
                     subCategoryPillsHtml = `
                         <div class="col-12 mb-3 text-center">
                             <div class="d-flex flex-column align-items-center gap-2" id="subCategoryPills-${catId}">
@@ -2565,7 +2576,7 @@ async function renderServices(services) {
                             </div>
                         </div>
                     `;
-                } else if (cat.name === "Women's Wear") {
+                } else if (cat.name === "Women's Wear" || catNameLower.includes('women')) {
                     subCategoryPillsHtml = `
                         <div class="col-12 mb-3 text-center overflow-auto">
                             <ul class="nav nav-pills justify-content-center align-items-center flex-nowrap gap-1 gap-sm-2" id="subCategoryPills-${catId}">
@@ -2582,7 +2593,7 @@ async function renderServices(services) {
                             </ul>
                         </div>
                     `;
-                } else if (["Men's Wear", "Kids", "Kids Wear", "Home & Others"].includes(cat.name)) {
+                } else if (["Men's Wear", "Kids", "Kids Wear", "Home & Others"].includes(cat.name) || catNameLower.includes('men') || catNameLower.includes('kid') || catNameLower.includes('home')) {
                     subCategoryPillsHtml = `
                         <div class="col-12 mb-3 text-center overflow-auto">
                             <ul class="nav nav-pills justify-content-center align-items-center flex-nowrap gap-1 gap-sm-2" id="subCategoryPills-${catId}">
