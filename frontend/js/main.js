@@ -2372,6 +2372,7 @@ function getItemSubCategoryLabel(item, categoryName) {
     if (cat === "Men's Wear" || (cat.toLowerCase().includes('men') && !cat.toLowerCase().includes('women'))) prefix = "Men's";
     else if (cat === "Women's Wear" || cat.toLowerCase().includes('women')) prefix = "Women's";
     else if (cat === "Kids" || cat === "Kids Wear" || cat.toLowerCase().includes('kid')) prefix = "Kids";
+    else if (cat === "Home & Others" || cat.toLowerCase().includes('home')) prefix = "Home & Others";
 
     if (sub) {
         if (prefix && !sub.toLowerCase().includes(prefix.toLowerCase().replace(/[^a-z]/g, ''))) {
