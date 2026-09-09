@@ -2097,6 +2097,12 @@ function getItemSubCategoryKey(item) {
     const subCatLower = (item.subCategory || '').toLowerCase();
 
     if (category === 'Premium Care') {
+        if (subCatLower.includes('kid') || nameLower.includes('kid') || nameLower.includes('child') || nameLower.includes('baby') || nameLower.includes('boy') || nameLower.includes('girl')) {
+            return 'kids';
+        }
+        if (subCatLower.includes('home') || subCatLower.includes('other') || nameLower.includes('curtain') || nameLower.includes('blanket') || nameLower.includes('carpet') || nameLower.includes('sheet') || nameLower.includes('rug') || nameLower.includes('cover') || nameLower.includes('towel')) {
+            return 'homeothers';
+        }
         if (subCatLower.includes('women') || nameLower.includes('saree') || nameLower.includes('lehenga') || nameLower.includes('gown') || nameLower.includes('kurti') || nameLower.includes('women') || nameLower.includes('dress') || nameLower.includes('suit salwar') || nameLower.includes('dupatta') || nameLower.includes('anarkali')) {
             return 'womens';
         }
@@ -2123,7 +2129,11 @@ function getItemSubCategoryKey(item) {
 }
 
 function getPremiumSubCategory(item) {
-    return getItemSubCategoryKey(item) === 'womens' ? "Women's Premium Care" : "Men's Premium Care";
+    const key = getItemSubCategoryKey(item);
+    if (key === 'womens') return "Women's Premium Care";
+    if (key === 'kids') return "Kids Premium Care";
+    if (key === 'homeothers') return "Home & Others Premium Care";
+    return "Men's Premium Care";
 }
 
 window.filterSubCategory = function(subType, tabId, btnElement) {
@@ -2260,6 +2270,16 @@ async function renderServices(services) {
                                 <li class="nav-item">
                                     <button type="button" class="nav-link sub-category-pill" onclick="filterSubCategory('womens', '${catId}', this)">
                                         <i class="fas fa-venus me-1"></i> Women's Premium Care
+                                    </button>
+                                </li>
+                                <li class="nav-item">
+                                    <button type="button" class="nav-link sub-category-pill" onclick="filterSubCategory('kids', '${catId}', this)">
+                                        <i class="fas fa-child me-1"></i> Kids Premium Care
+                                    </button>
+                                </li>
+                                <li class="nav-item">
+                                    <button type="button" class="nav-link sub-category-pill" onclick="filterSubCategory('homeothers', '${catId}', this)">
+                                        <i class="fas fa-house me-1"></i> Home & Others Premium Care
                                     </button>
                                 </li>
                             </ul>
@@ -3222,6 +3242,8 @@ function toggleSubCategoryVisibility() {
         subCatSelect.innerHTML = `
             <option value="Men's Premium Care">Men's Premium Care</option>
             <option value="Women's Premium Care">Women's Premium Care</option>
+            <option value="Kids Premium Care">Kids Premium Care</option>
+            <option value="Home & Others Premium Care">Home & Others Premium Care</option>
         `;
         if (!subCatSelect.value) subCatSelect.value = "Men's Premium Care";
     } else if (select.value === "Women's Wear") {
