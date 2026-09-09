@@ -3362,20 +3362,28 @@ async function editService(id) {
     document.getElementById('serviceCategory').value = service.category;
     document.getElementById('servicePrice').value = service.price;
     document.getElementById('serviceIcon').value = service.icon || 'fas fa-shirt';
-    
-    // Hide all other containers so only Price can be edited
-    document.getElementById('serviceNameContainer').style.display = 'none';
-    document.getElementById('serviceCategoryContainer').style.display = 'none';
-    const subCatContainer = document.getElementById('serviceSubCategoryContainer');
-    if (subCatContainer) subCatContainer.style.display = 'none';
-    document.getElementById('serviceIconContainer').style.display = 'none';
-    document.getElementById('serviceImageContainer').style.display = 'none';
-    
-    // Bypass validation requirements on hidden elements for editing
-    document.getElementById('serviceName').required = false;
-    document.getElementById('serviceCategory').required = false;
+    const fileInput = document.getElementById('serviceIconFile');
+    if (fileInput) fileInput.value = '';
 
-    document.getElementById('serviceModalTitle').innerText = 'Edit Service Price';
+    // Show all input containers for full service editing
+    document.getElementById('serviceNameContainer').style.display = 'block';
+    document.getElementById('serviceCategoryContainer').style.display = 'block';
+    document.getElementById('serviceIconContainer').style.display = 'block';
+    document.getElementById('serviceImageContainer').style.display = 'block';
+    
+    // Update sub-category dropdown options and selection
+    toggleSubCategoryVisibility();
+    const subCatEl = document.getElementById('serviceSubCategory');
+    if (subCatEl && service.subCategory) {
+        subCatEl.value = service.subCategory;
+    }
+
+    // Restore validation requirements
+    document.getElementById('serviceName').required = true;
+    document.getElementById('serviceCategory').required = true;
+    document.getElementById('servicePrice').required = true;
+
+    document.getElementById('serviceModalTitle').innerText = 'Edit Service Details';
     const modal = new bootstrap.Modal(document.getElementById('serviceModal'));
     modal.show();
 }
