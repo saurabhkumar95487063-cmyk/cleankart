@@ -262,11 +262,16 @@
     <!-- Services Section -->
     <section id="services" class="pt-2 pb-5 bg-darker">
         <div class="container">
-            <h2 class="text-center mb-5">Our Services</h2>
+            <h2 class="text-center mb-5 d-none d-md-block">Our Services</h2>
             
-            <ul class="nav nav-pills mb-4 justify-content-center" id="categoryTabs" role="tablist">
-                <!-- Tabs will be loaded dynamically -->
-            </ul>
+            <fieldset class="services-mobile-fieldset mb-4">
+                <legend class="services-mobile-legend d-md-none">
+                    <i class="fas fa-concierge-bell me-2 text-info"></i>Our Services
+                </legend>
+                <ul class="nav nav-pills justify-content-center" id="categoryTabs" role="tablist">
+                    <!-- Tabs will be loaded dynamically -->
+                </ul>
+            </fieldset>
 
             <div class="tab-content" id="categoryTabContent">
                 <!-- Tab content will be loaded dynamically -->
