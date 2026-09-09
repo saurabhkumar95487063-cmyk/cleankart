@@ -2096,6 +2096,17 @@ function getItemSubCategoryKey(item) {
     const nameLower = (item.name || '').toLowerCase();
     const subCatLower = (item.subCategory || '').toLowerCase();
 
+    if (item.subCategory && item.subCategory.trim()) {
+        const cleanSub = item.subCategory.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+        if (cleanSub.includes('winter')) return 'winter';
+        if (cleanSub.includes('summer')) return 'summer';
+        if (cleanSub.includes('women')) return 'womens';
+        if (cleanSub.includes('kid')) return 'kids';
+        if (cleanSub.includes('home') || cleanSub.includes('other')) return 'homeothers';
+        if (cleanSub.includes('men')) return 'mens';
+        return cleanSub;
+    }
+
     if (category === 'Premium Care') {
         if (subCatLower.includes('kid') || nameLower.includes('kid') || nameLower.includes('child') || nameLower.includes('baby') || nameLower.includes('boy') || nameLower.includes('girl')) {
             return 'kids';
@@ -2112,10 +2123,6 @@ function getItemSubCategoryKey(item) {
     if (category === 'Shoes') {
         return '';
     }
-
-    // Check explicit subCategory field first if provided by DB/Admin
-    if (subCatLower.includes('winter')) return 'winter';
-    if (subCatLower.includes('summer')) return 'summer';
 
     // Auto-detect winter items by name keywords
     const winterKeywords = [
@@ -2258,7 +2265,30 @@ async function renderServices(services) {
 
             let subCategoryPillsHtml = '';
             if (catServices.length > 0) {
-                if (cat.name === 'Premium Care') {
+                if (cat.subCategories && cat.subCategories.length > 0) {
+                    subCategoryPillsHtml = `
+                        <div class="col-12 mb-3 text-center overflow-auto">
+                            <ul class="nav nav-pills justify-content-center align-items-center flex-nowrap gap-1 gap-sm-2" id="subCategoryPills-${catId}">
+                                ${cat.subCategories.map((sub, sIdx) => {
+                                    let subKey = sub.toLowerCase().replace(/[^a-z0-9]/g, '');
+                                    if (subKey.includes('winter')) subKey = 'winter';
+                                    else if (subKey.includes('summer')) subKey = 'summer';
+                                    else if (subKey.includes('women')) subKey = 'womens';
+                                    else if (subKey.includes('kid')) subKey = 'kids';
+                                    else if (subKey.includes('home') || subKey.includes('other')) subKey = 'homeothers';
+                                    else if (subKey.includes('men')) subKey = 'mens';
+                                    return `
+                                        <li class="nav-item">
+                                            <button type="button" class="nav-link sub-category-pill ${sIdx === 0 ? 'active' : ''}" onclick="filterSubCategory('${subKey}', '${catId}', this)">
+                                                ${sub}
+                                            </button>
+                                        </li>
+                                    `;
+                                }).join('')}
+                            </ul>
+                        </div>
+                    `;
+                } else if (cat.name === 'Premium Care') {
                     subCategoryPillsHtml = `
                         <div class="col-12 mb-3 text-center">
                             <div class="d-flex flex-column align-items-center gap-2" id="subCategoryPills-${catId}">
@@ -3202,13 +3232,22 @@ async function fetchAdminSalesReport() {
 let allServicesList = [];
 let allCategoriesList = [];
 
-function getSubCategoryBadgesForCategory(categoryName) {
-    if (categoryName === "Women's Wear") {
-        return '<span class="badge bg-dark border border-warning text-warning me-1">Summer Clothes</span><span class="badge bg-dark border border-info text-info">Winter Clothes</span>';
-    } else if (categoryName === "Premium Care") {
+function getSubCategoryBadgesForCategory(categoryObjOrName) {
+    let name = typeof categoryObjOrName === 'object' ? categoryObjOrName.name : categoryObjOrName;
+    let subCats = (typeof categoryObjOrName === 'object' && Array.isArray(categoryObjOrName.subCategories) && categoryObjOrName.subCategories.length > 0)
+        ? categoryObjOrName.subCategories
+        : null;
+
+    if (subCats && subCats.length > 0) {
+        return subCats.map(sc => `<span class="badge bg-dark border border-info text-info me-1 mb-1">${sc}</span>`).join('');
+    }
+
+    if (name === "Women's Wear") {
+        return '<span class="badge bg-dark border border-warning text-warning me-1 mb-1">Summer Clothes</span><span class="badge bg-dark border border-info text-info me-1 mb-1">Winter Clothes</span>';
+    } else if (name === "Premium Care") {
         return '<span class="badge bg-dark border border-primary text-primary me-1 mb-1">Men\'s Premium Care</span><span class="badge bg-dark border border-danger text-danger me-1 mb-1">Women\'s Premium Care</span><span class="badge bg-dark border border-success text-success me-1 mb-1">Kids Premium Care</span><span class="badge bg-dark border border-warning text-warning mb-1">Home & Others Premium Care</span>';
-    } else if (["Men's Wear", "Kids", "Kids Wear", "Home & Others"].includes(categoryName)) {
-        return '<span class="badge bg-dark border border-warning text-warning me-1">Summer Wears</span><span class="badge bg-dark border border-info text-info">Winter Wears</span>';
+    } else if (["Men's Wear", "Kids", "Kids Wear", "Home & Others"].includes(name)) {
+        return '<span class="badge bg-dark border border-warning text-warning me-1 mb-1">Summer Wears</span><span class="badge bg-dark border border-info text-info me-1 mb-1">Winter Wears</span>';
     }
     return '<span class="badge bg-secondary">Standard</span>';
 }
@@ -3224,7 +3263,7 @@ async function fetchAdminCategories() {
                 <tr>
                     <td class="fw-bold">${c.name}</td>
                     <td><i class="${c.icon || 'fas fa-tags'} me-2 text-info"></i><small class="text-secondary">${c.icon || 'fas fa-tags'}</small></td>
-                    <td>${getSubCategoryBadgesForCategory(c.name)}</td>
+                    <td>${getSubCategoryBadgesForCategory(c)}</td>
                     <td>
                         <button class="btn btn-sm btn-outline-info me-2" onclick="editCategory('${c._id}')" title="Edit Category"><i class="fas fa-edit"></i></button>
                         <button class="btn btn-sm btn-outline-danger" onclick="deleteCategory('${c._id}')" title="Delete Category"><i class="fas fa-trash"></i></button>
@@ -3242,6 +3281,8 @@ function prepareCategoryForm() {
     if (form) form.reset();
     const idEl = document.getElementById('categoryId');
     if (idEl) idEl.value = '';
+    const catSubCatEl = document.getElementById('catSubCategories');
+    if (catSubCatEl) catSubCatEl.value = '';
     const titleEl = document.getElementById('categoryModalTitle');
     if (titleEl) titleEl.innerHTML = '<i class="fas fa-folder-plus text-info me-2"></i>Add New Category';
     
@@ -3264,6 +3305,23 @@ function editCategory(id) {
 
     const catIconEl = document.getElementById('catIcon') || document.getElementById('categoryIcon');
     if (catIconEl) catIconEl.value = category.icon || 'fas fa-tags';
+
+    const catSubCatEl = document.getElementById('catSubCategories');
+    if (catSubCatEl) {
+        if (category.subCategories && Array.isArray(category.subCategories) && category.subCategories.length > 0) {
+            catSubCatEl.value = category.subCategories.join(', ');
+        } else {
+            if (category.name === "Women's Wear") {
+                catSubCatEl.value = "Summer Clothes, Winter Clothes";
+            } else if (category.name === "Premium Care") {
+                catSubCatEl.value = "Men's Premium Care, Women's Premium Care, Kids Premium Care, Home & Others Premium Care";
+            } else if (["Men's Wear", "Kids", "Kids Wear", "Home & Others"].includes(category.name)) {
+                catSubCatEl.value = "Summer Wears, Winter Wears";
+            } else {
+                catSubCatEl.value = "";
+            }
+        }
+    }
 
     const titleEl = document.getElementById('categoryModalTitle');
     if (titleEl) titleEl.innerHTML = '<i class="fas fa-edit text-info me-2"></i>Edit Category';
@@ -3412,15 +3470,19 @@ document.getElementById('categoryForm')?.addEventListener('submit', async (e) =>
     const id = document.getElementById('categoryId')?.value;
     const catNameEl = document.getElementById('catName') || document.getElementById('categoryName');
     const catIconEl = document.getElementById('catIcon') || document.getElementById('categoryIcon');
+    const catSubCatEl = document.getElementById('catSubCategories');
+
     const name = catNameEl ? catNameEl.value.trim() : '';
     const icon = (catIconEl && catIconEl.value.trim()) ? catIconEl.value.trim() : 'fas fa-tags';
+    const subCatStr = catSubCatEl ? catSubCatEl.value.trim() : '';
+    const subCategories = subCatStr ? subCatStr.split(',').map(s => s.trim()).filter(Boolean) : [];
 
     if (!name) {
         notifyUser('Category name is required', 'warning');
         return;
     }
 
-    const data = { name, icon };
+    const data = { name, icon, subCategories };
     const url = id ? `/api/categories/${id}` : '/api/categories';
     const method = id ? 'PUT' : 'POST';
 
