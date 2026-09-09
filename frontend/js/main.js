@@ -2091,13 +2091,39 @@ async function fetchServices() {
     }
 }
 
-function getPremiumSubCategory(item) {
-    if (item.subCategory) return item.subCategory;
+function getItemSubCategoryKey(item) {
+    const category = item.category || '';
     const nameLower = (item.name || '').toLowerCase();
-    if (nameLower.includes('saree') || nameLower.includes('lehenga') || nameLower.includes('gown') || nameLower.includes('kurti') || nameLower.includes('women') || nameLower.includes('dress') || nameLower.includes('suit salwar')) {
-        return "Women's Premium Care";
+    const subCatLower = (item.subCategory || '').toLowerCase();
+
+    if (category === 'Premium Care') {
+        if (subCatLower.includes('women') || nameLower.includes('saree') || nameLower.includes('lehenga') || nameLower.includes('gown') || nameLower.includes('kurti') || nameLower.includes('women') || nameLower.includes('dress') || nameLower.includes('suit salwar') || nameLower.includes('dupatta') || nameLower.includes('anarkali')) {
+            return 'womens';
+        }
+        return 'mens';
     }
-    return "Men's Premium Care";
+
+    if (category === 'Shoes') {
+        return '';
+    }
+
+    // Check explicit subCategory field first if provided by DB/Admin
+    if (subCatLower.includes('winter')) return 'winter';
+    if (subCatLower.includes('summer')) return 'summer';
+
+    // Auto-detect winter items by name keywords
+    const winterKeywords = [
+        'jacket', 'coat', 'blazer', 'sweater', 'hoodie', 'sweatshirt', 
+        'overcoat', 'cardigan', 'thermal', 'woolen', 'pullover', 'muffler', 
+        'shawl', 'stole', 'blanket', 'quilt', 'duvet', 'comforter', 'rug', 'carpet'
+    ];
+
+    const isWinter = winterKeywords.some(kw => nameLower.includes(kw));
+    return isWinter ? 'winter' : 'summer';
+}
+
+function getPremiumSubCategory(item) {
+    return getItemSubCategoryKey(item) === 'womens' ? "Women's Premium Care" : "Men's Premium Care";
 }
 
 window.filterSubCategory = function(subType, tabId, btnElement) {
@@ -2170,6 +2196,14 @@ async function renderServices(services) {
             const catServices = services.filter(s => s.category === cat.name);
             let servicesHtml = '';
             
+            // Determine default active subCategory key for this category
+            let defaultSubCatKey = '';
+            if (cat.name === 'Premium Care') {
+                defaultSubCatKey = 'mens';
+            } else if (["Men's Wear", "Women's Wear", "Kids", "Kids Wear", "Home & Others"].includes(cat.name)) {
+                defaultSubCatKey = 'summer';
+            }
+            
             if (catServices.length === 0) {
                 servicesHtml = `<div class="col-12 text-center py-5 text-muted">No services found in this category.</div>`;
             } else {
@@ -2187,14 +2221,10 @@ async function renderServices(services) {
                         : `<i class="${iconClass}"></i>`;
 
                     // Sub-category classification for filtering
-                    let subCatKey = '';
+                    const subCatKey = getItemSubCategoryKey(item);
                     let cardStyle = '';
-                    if (cat.name === 'Premium Care') {
-                        const subCat = getPremiumSubCategory(item);
-                        subCatKey = subCat.includes('Men') ? 'mens' : 'womens';
-                        if (subCatKey !== 'mens') {
-                            cardStyle = 'style="display: none;"';
-                        }
+                    if (defaultSubCatKey && subCatKey && subCatKey !== defaultSubCatKey) {
+                        cardStyle = 'style="display: none;"';
                     }
 
                     servicesHtml += `
@@ -2217,23 +2247,59 @@ async function renderServices(services) {
             }
 
             let subCategoryPillsHtml = '';
-            if (cat.name === 'Premium Care' && catServices.length > 0) {
-                subCategoryPillsHtml = `
-                    <div class="col-12 mb-3 text-center overflow-auto">
-                        <ul class="nav nav-pills justify-content-center align-items-center flex-nowrap gap-1 gap-sm-2" id="subCategoryPills-${catId}">
-                            <li class="nav-item">
-                                <button type="button" class="nav-link sub-category-pill active" onclick="filterSubCategory('mens', '${catId}', this)">
-                                    <i class="fas fa-mars me-1"></i> Men's Premium Care
-                                </button>
-                            </li>
-                            <li class="nav-item">
-                                <button type="button" class="nav-link sub-category-pill" onclick="filterSubCategory('womens', '${catId}', this)">
-                                    <i class="fas fa-venus me-1"></i> Women's Premium Care
-                                </button>
-                            </li>
-                        </ul>
-                    </div>
-                `;
+            if (catServices.length > 0) {
+                if (cat.name === 'Premium Care') {
+                    subCategoryPillsHtml = `
+                        <div class="col-12 mb-3 text-center overflow-auto">
+                            <ul class="nav nav-pills justify-content-center align-items-center flex-nowrap gap-1 gap-sm-2" id="subCategoryPills-${catId}">
+                                <li class="nav-item">
+                                    <button type="button" class="nav-link sub-category-pill active" onclick="filterSubCategory('mens', '${catId}', this)">
+                                        <i class="fas fa-mars me-1"></i> Men's Premium Care
+                                    </button>
+                                </li>
+                                <li class="nav-item">
+                                    <button type="button" class="nav-link sub-category-pill" onclick="filterSubCategory('womens', '${catId}', this)">
+                                        <i class="fas fa-venus me-1"></i> Women's Premium Care
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                    `;
+                } else if (cat.name === "Women's Wear") {
+                    subCategoryPillsHtml = `
+                        <div class="col-12 mb-3 text-center overflow-auto">
+                            <ul class="nav nav-pills justify-content-center align-items-center flex-nowrap gap-1 gap-sm-2" id="subCategoryPills-${catId}">
+                                <li class="nav-item">
+                                    <button type="button" class="nav-link sub-category-pill active" onclick="filterSubCategory('summer', '${catId}', this)">
+                                        <i class="fas fa-sun me-1"></i> Summer Clothes
+                                    </button>
+                                </li>
+                                <li class="nav-item">
+                                    <button type="button" class="nav-link sub-category-pill" onclick="filterSubCategory('winter', '${catId}', this)">
+                                        <i class="fas fa-snowflake me-1"></i> Winter Clothes
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                    `;
+                } else if (["Men's Wear", "Kids", "Kids Wear", "Home & Others"].includes(cat.name)) {
+                    subCategoryPillsHtml = `
+                        <div class="col-12 mb-3 text-center overflow-auto">
+                            <ul class="nav nav-pills justify-content-center align-items-center flex-nowrap gap-1 gap-sm-2" id="subCategoryPills-${catId}">
+                                <li class="nav-item">
+                                    <button type="button" class="nav-link sub-category-pill active" onclick="filterSubCategory('summer', '${catId}', this)">
+                                        <i class="fas fa-sun me-1"></i> Summer Wears
+                                    </button>
+                                </li>
+                                <li class="nav-item">
+                                    <button type="button" class="nav-link sub-category-pill" onclick="filterSubCategory('winter', '${catId}', this)">
+                                        <i class="fas fa-snowflake me-1"></i> Winter Wears
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                    `;
+                }
             }
 
             contentContainer.innerHTML += `
@@ -3148,16 +3214,33 @@ function toggleSubCategoryVisibility() {
     const subCatContainer = document.getElementById('serviceSubCategoryContainer');
     if (!select || !subCatContainer) return;
 
+    const subCatSelect = document.getElementById('serviceSubCategory');
+    if (!subCatSelect) return;
+
     if (select.value === 'Premium Care') {
         subCatContainer.style.display = 'block';
-        const subCatSelect = document.getElementById('serviceSubCategory');
-        if (subCatSelect && (!subCatSelect.value || subCatSelect.value === '')) {
-            subCatSelect.value = "Men's Premium Care";
-        }
+        subCatSelect.innerHTML = `
+            <option value="Men's Premium Care">Men's Premium Care</option>
+            <option value="Women's Premium Care">Women's Premium Care</option>
+        `;
+        if (!subCatSelect.value) subCatSelect.value = "Men's Premium Care";
+    } else if (select.value === "Women's Wear") {
+        subCatContainer.style.display = 'block';
+        subCatSelect.innerHTML = `
+            <option value="Summer Clothes">Summer Clothes</option>
+            <option value="Winter Clothes">Winter Clothes</option>
+        `;
+        if (!subCatSelect.value) subCatSelect.value = "Summer Clothes";
+    } else if (["Men's Wear", "Kids", "Kids Wear", "Home & Others"].includes(select.value)) {
+        subCatContainer.style.display = 'block';
+        subCatSelect.innerHTML = `
+            <option value="Summer Wears">Summer Wears</option>
+            <option value="Winter Wears">Winter Wears</option>
+        `;
+        if (!subCatSelect.value) subCatSelect.value = "Summer Wears";
     } else {
         subCatContainer.style.display = 'none';
-        const subCatSelect = document.getElementById('serviceSubCategory');
-        if (subCatSelect) subCatSelect.value = '';
+        subCatSelect.value = '';
     }
 }
 
