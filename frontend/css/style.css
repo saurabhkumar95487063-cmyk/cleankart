@@ -161,12 +161,12 @@ body {
 @media (max-width: 767.98px) {
     .hero-section {
         min-height: unset !important;
-        padding-top: 1rem !important;
-        padding-bottom: 1.5rem !important;
+        padding-top: 0 !important;
+        padding-bottom: 1rem !important;
         align-items: flex-start !important;
     }
     .hero-section .container {
-        padding-top: 0.5rem !important;
+        padding-top: 0.25rem !important;
         padding-bottom: 0.5rem !important;
     }
     .hero-section .row {
@@ -607,7 +607,7 @@ header.sticky-top {
 
 @media (max-width: 576px) {
     body {
-        padding-top: 70px;
+        padding-top: 54px !important;
     }
     .navbar-brand img {
         height: 30px !important;
@@ -982,7 +982,7 @@ header.sticky-top {
 @media (max-width: 767px) {
     .hero-section {
         min-height: auto !important;
-        padding-top: 1rem !important;
+        padding-top: 0 !important;
         padding-bottom: 1rem !important;
     }
     
