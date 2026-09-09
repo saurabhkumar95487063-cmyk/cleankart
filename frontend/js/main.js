@@ -2200,12 +2200,12 @@ function handleMobileSearch(query) {
                     iconHtml = `<img src="/uploads/${item.image}" alt="${item.name}" onerror="this.onerror=null; this.parentNode.innerHTML='<i class=\\'${iconClass}\\'></i>';">`;
                 }
                 const subCatLabel = getItemSubCategoryLabel(item, item.category);
-                const catSubTag = `${item.category || 'General'}${subCatLabel ? ` • ${subCatLabel}` : ''}`;
+                const catSubTag = subCatLabel || item.category || 'General';
                 return `
                     <div class="col-6">
                         <div class="service-card text-center p-2">
                             <div class="mb-1">
-                                <span class="badge bg-dark border border-secondary text-info fw-normal" style="font-size: 0.6rem; padding: 3px 6px;">${catSubTag}</span>
+                                <span class="badge bg-dark border border-secondary text-info fw-normal text-wrap" style="font-size: 0.6rem; padding: 3px 6px; max-width: 95%; line-height: 1.2; word-break: break-word;">${catSubTag}</span>
                             </div>
                             <div class="icon-container" style="width: 45px; height: 45px; margin-bottom: 5px;">
                                 ${iconHtml}
@@ -2265,13 +2265,13 @@ function renderSearchResults(results, query) {
             iconHtml = `<img src="/uploads/${item.image}" alt="${item.name}" onerror="this.onerror=null; this.parentNode.innerHTML='<i class=\\'${iconClass}\\'></i>';">`;
         }
         const subCatLabel = getItemSubCategoryLabel(item, item.category);
-        const catSubTag = `${item.category || 'General'}${subCatLabel ? ` • ${subCatLabel}` : ''}`;
+        const catSubTag = subCatLabel || item.category || 'General';
 
         return `
             <div class="col-6 col-md-4 col-lg-3">
                 <div class="service-card text-center p-3">
                     <div class="mb-2">
-                        <span class="badge bg-dark border border-secondary text-info fw-normal" style="font-size: 0.65rem; padding: 3px 7px;">${catSubTag}</span>
+                        <span class="badge bg-dark border border-secondary text-info fw-normal text-wrap" style="font-size: 0.65rem; padding: 3px 7px; max-width: 95%; line-height: 1.2; word-break: break-word;">${catSubTag}</span>
                     </div>
                     <div class="icon-container">
                         ${iconHtml}
@@ -2477,7 +2477,7 @@ async function renderServices(services) {
                     // Sub-category classification for filtering
                     const subCatKey = getItemSubCategoryKey(item);
                     const subCatLabel = getItemSubCategoryLabel(item, cat.name);
-                    const catSubTag = `${item.category || cat.name}${subCatLabel ? ` • ${subCatLabel}` : ''}`;
+                    const catSubTag = subCatLabel || item.category || cat.name;
                     let cardStyle = '';
                     if (defaultSubCatKey && subCatKey && subCatKey !== defaultSubCatKey) {
                         cardStyle = 'style="display: none;"';
@@ -2487,7 +2487,7 @@ async function renderServices(services) {
                         <div class="col-6 col-md-4 col-lg-3 service-card-wrapper" data-subcategory="${subCatKey}" ${cardStyle}>
                             <div class="service-card p-3 text-center mb-4">
                                 <div class="mb-2">
-                                    <span class="badge bg-dark border border-secondary text-info fw-normal" style="font-size: 0.65rem; padding: 3px 7px;">${catSubTag}</span>
+                                    <span class="badge bg-dark border border-secondary text-info fw-normal text-wrap" style="font-size: 0.65rem; padding: 3px 7px; max-width: 95%; line-height: 1.2; word-break: break-word;">${catSubTag}</span>
                                 </div>
                                 <div class="icon-container">
                                     ${iconHtml}

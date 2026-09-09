@@ -1161,3 +1161,12 @@ header.sticky-top {
     overflow: hidden !important;
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6) !important;
 }
+
+/* Service Card Badge Overflow Prevention */
+.service-card .badge {
+    max-width: 95% !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    line-height: 1.25 !important;
+    display: inline-block !important;
+}
