@@ -2199,10 +2199,14 @@ function handleMobileSearch(query) {
                 if (item.image) {
                     iconHtml = `<img src="/uploads/${item.image}" alt="${item.name}" onerror="this.onerror=null; this.parentNode.innerHTML='<i class=\\'${iconClass}\\'></i>';">`;
                 }
+                const subCatLabel = getItemSubCategoryLabel(item, item.category);
+                const catSubTag = `${item.category || 'General'}${subCatLabel ? ` • ${subCatLabel}` : ''}`;
                 return `
                     <div class="col-6">
                         <div class="service-card text-center p-2">
-                            <span class="badge bg-dark border border-secondary text-info mb-1 align-self-center" style="font-size: 0.65rem;">${item.category || 'General'}</span>
+                            <div class="mb-1">
+                                <span class="badge bg-dark border border-secondary text-info fw-normal" style="font-size: 0.6rem; padding: 3px 6px;">${catSubTag}</span>
+                            </div>
                             <div class="icon-container" style="width: 45px; height: 45px; margin-bottom: 5px;">
                                 ${iconHtml}
                             </div>
@@ -2260,15 +2264,19 @@ function renderSearchResults(results, query) {
         if (item.image) {
             iconHtml = `<img src="/uploads/${item.image}" alt="${item.name}" onerror="this.onerror=null; this.parentNode.innerHTML='<i class=\\'${iconClass}\\'></i>';">`;
         }
+        const subCatLabel = getItemSubCategoryLabel(item, item.category);
+        const catSubTag = `${item.category || 'General'}${subCatLabel ? ` • ${subCatLabel}` : ''}`;
 
         return `
             <div class="col-6 col-md-4 col-lg-3">
                 <div class="service-card text-center p-3">
-                    <span class="badge bg-dark border border-secondary text-info mb-2 align-self-center" style="font-size: 0.7rem;">${item.category || 'General'}</span>
+                    <div class="mb-2">
+                        <span class="badge bg-dark border border-secondary text-info fw-normal" style="font-size: 0.65rem; padding: 3px 7px;">${catSubTag}</span>
+                    </div>
                     <div class="icon-container">
                         ${iconHtml}
                     </div>
-                    <h6 class="fw-bold text-white">${item.name}</h6>
+                    <h6 class="fw-bold text-white mb-1">${item.name}</h6>
                     <p class="text-info small mb-3">${displayPrice}</p>
                     <div class="qty-controls">
                         <button class="qty-btn btn-outline-secondary" onclick="removeFromCart('${item.name}')">-</button>
@@ -2348,6 +2356,28 @@ function getPremiumSubCategory(item) {
     if (key === 'kids') return "Kids Premium Care";
     if (key === 'homeothers') return "Home & Others Premium Care";
     return "Men's Premium Care";
+}
+
+function getItemSubCategoryLabel(item, categoryName) {
+    if (item.subCategory && item.subCategory.trim()) {
+        return item.subCategory.trim();
+    }
+    const cat = categoryName || item.category || '';
+    const key = getItemSubCategoryKey(item);
+    if (cat === 'Premium Care') {
+        return getPremiumSubCategory(item);
+    }
+    if (key === 'summer') {
+        return cat === "Women's Wear" ? "Summer Clothes" : "Summer Wears";
+    }
+    if (key === 'winter') {
+        return cat === "Women's Wear" ? "Winter Clothes" : "Winter Wears";
+    }
+    if (key === 'mens') return "Men's Wears";
+    if (key === 'womens') return "Women's Clothes";
+    if (key === 'kids') return "Kids Wears";
+    if (key === 'homeothers') return "Home & Others";
+    return "";
 }
 
 window.filterSubCategory = function(subType, tabId, btnElement) {
@@ -2446,6 +2476,8 @@ async function renderServices(services) {
 
                     // Sub-category classification for filtering
                     const subCatKey = getItemSubCategoryKey(item);
+                    const subCatLabel = getItemSubCategoryLabel(item, cat.name);
+                    const catSubTag = `${item.category || cat.name}${subCatLabel ? ` • ${subCatLabel}` : ''}`;
                     let cardStyle = '';
                     if (defaultSubCatKey && subCatKey && subCatKey !== defaultSubCatKey) {
                         cardStyle = 'style="display: none;"';
@@ -2454,10 +2486,13 @@ async function renderServices(services) {
                     servicesHtml += `
                         <div class="col-6 col-md-4 col-lg-3 service-card-wrapper" data-subcategory="${subCatKey}" ${cardStyle}>
                             <div class="service-card p-3 text-center mb-4">
+                                <div class="mb-2">
+                                    <span class="badge bg-dark border border-secondary text-info fw-normal" style="font-size: 0.65rem; padding: 3px 7px;">${catSubTag}</span>
+                                </div>
                                 <div class="icon-container">
                                     ${iconHtml}
                                 </div>
-                                <h6 class="fw-bold text-white">${item.name}</h6>
+                                <h6 class="fw-bold text-white mb-1">${item.name}</h6>
                                 <p class="text-info small mb-3">${displayPrice}</p>
                                 <div class="qty-controls">
                                     <button class="qty-btn btn-outline-secondary" onclick="removeFromCart('${item.name}')">-</button>
