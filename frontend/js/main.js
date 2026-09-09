@@ -2260,29 +2260,25 @@ async function renderServices(services) {
             if (catServices.length > 0) {
                 if (cat.name === 'Premium Care') {
                     subCategoryPillsHtml = `
-                        <div class="col-12 mb-3 text-center overflow-auto">
-                            <ul class="nav nav-pills justify-content-center align-items-center flex-nowrap gap-1 gap-sm-2" id="subCategoryPills-${catId}">
-                                <li class="nav-item">
+                        <div class="col-12 mb-3 text-center">
+                            <div class="d-flex flex-column align-items-center gap-2" id="subCategoryPills-${catId}">
+                                <div class="d-flex justify-content-center align-items-center flex-wrap gap-2">
                                     <button type="button" class="nav-link sub-category-pill active" onclick="filterSubCategory('mens', '${catId}', this)">
                                         <i class="fas fa-mars me-1"></i> Men's Premium Care
                                     </button>
-                                </li>
-                                <li class="nav-item">
                                     <button type="button" class="nav-link sub-category-pill" onclick="filterSubCategory('womens', '${catId}', this)">
                                         <i class="fas fa-venus me-1"></i> Women's Premium Care
                                     </button>
-                                </li>
-                                <li class="nav-item">
+                                </div>
+                                <div class="d-flex justify-content-center align-items-center flex-wrap gap-2">
                                     <button type="button" class="nav-link sub-category-pill" onclick="filterSubCategory('kids', '${catId}', this)">
                                         <i class="fas fa-child me-1"></i> Kids Premium Care
                                     </button>
-                                </li>
-                                <li class="nav-item">
                                     <button type="button" class="nav-link sub-category-pill" onclick="filterSubCategory('homeothers', '${catId}', this)">
                                         <i class="fas fa-house me-1"></i> Home & Others Premium Care
                                     </button>
-                                </li>
-                            </ul>
+                                </div>
+                            </div>
                         </div>
                     `;
                 } else if (cat.name === "Women's Wear") {
