@@ -2066,6 +2066,8 @@ async function updateStatus(orderId, status, bypassOtp = false, pickupInspection
     }
 }
 
+let globalServicesCache = [];
+
 async function fetchServices() {
     try {
         const res = await fetch('/api/services');
@@ -2082,12 +2084,120 @@ async function fetchServices() {
                 { category: "Home & Others", name: "Bed Sheet", price: 40, prices: [{serviceType: 'Standard Wash', price: 40}], image: "sheet.png" },
                 { category: "Home & Others", name: "Blanket", price: 60, prices: [{serviceType: 'Dry Clean', price: 250}], image: "blanket.png" },
             ];
+            globalServicesCache = demoData;
             renderServices(demoData);
         } else {
+            globalServicesCache = data;
             renderServices(data);
         }
     } catch (err) {
         console.error('Error fetching services:', err);
+    }
+}
+
+function handleGlobalSearch(query) {
+    const clearBtn = document.getElementById('clearSearchBtn');
+    const q = (query || '').trim().toLowerCase();
+
+    if (clearBtn) {
+        if (q.length > 0) clearBtn.classList.remove('d-none');
+        else clearBtn.classList.add('d-none');
+    }
+
+    if (!q) {
+        if (globalServicesCache && globalServicesCache.length > 0) {
+            renderServices(globalServicesCache);
+        } else {
+            fetchServices();
+        }
+        return;
+    }
+
+    const matched = globalServicesCache.filter(item => {
+        const nameMatch = (item.name || '').toLowerCase().includes(q);
+        const catMatch = (item.category || '').toLowerCase().includes(q);
+        const subCatMatch = (item.subCategory || '').toLowerCase().includes(q);
+        const priceOptMatch = item.prices && item.prices.some(p => (p.serviceType || '').toLowerCase().includes(q));
+        return nameMatch || catMatch || subCatMatch || priceOptMatch;
+    });
+
+    renderSearchResults(matched, q);
+}
+
+function clearGlobalSearch() {
+    const input = document.getElementById('globalSearchInput');
+    if (input) input.value = '';
+    handleGlobalSearch('');
+}
+
+function renderSearchResults(results, query) {
+    const tabContainer = document.getElementById('categoryTabs');
+    const contentContainer = document.getElementById('categoryTabContent');
+    if (!tabContainer || !contentContainer) return;
+
+    tabContainer.innerHTML = `
+        <li class="nav-item">
+            <button class="nav-link active"><i class="fas fa-search me-2 text-info"></i>Search Results</button>
+        </li>
+    `;
+
+    if (results.length === 0) {
+        contentContainer.innerHTML = `
+            <div class="tab-pane fade show active" id="tab-search">
+                <div class="text-center py-5">
+                    <i class="fas fa-search-minus fa-3x text-secondary mb-3"></i>
+                    <h5 class="text-light">No services found for "<span class="text-info">${escapeHtml(query)}</span>"</h5>
+                    <p class="text-secondary small">Try searching for keywords like Shirt, Saree, Jacket, Blanket, etc.</p>
+                    <button class="btn btn-outline-info rounded-pill px-4 mt-2" onclick="clearGlobalSearch()">Clear Search</button>
+                </div>
+            </div>
+        `;
+        return;
+    }
+
+    let cardsHtml = results.map(item => {
+        const iconClass = item.icon || 'fas fa-shirt';
+        const hasOptions = item.prices && item.prices.length > 0;
+        const displayPrice = hasOptions ? `From ₹${Math.min(...item.prices.map(p => p.price))}` : `₹${item.price}`;
+        let iconHtml = `<i class="${iconClass}"></i>`;
+        if (item.image) {
+            iconHtml = `<img src="/uploads/${item.image}" alt="${item.name}" onerror="this.onerror=null; this.parentNode.innerHTML='<i class=\\'${iconClass}\\'></i>';">`;
+        }
+
+        return `
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="service-card text-center p-3">
+                    <span class="badge bg-dark border border-secondary text-info mb-2 align-self-center" style="font-size: 0.7rem;">${item.category || 'General'}</span>
+                    <div class="icon-container">
+                        ${iconHtml}
+                    </div>
+                    <h6 class="fw-bold text-white">${item.name}</h6>
+                    <p class="text-info small mb-3">${displayPrice}</p>
+                    <div class="qty-controls">
+                        <button class="qty-btn btn-outline-secondary" onclick="removeFromCart('${item.name}')">-</button>
+                        <span class="qty-number" id="qty-${item.name.replace(/\s+/g, '')}">${cart[item.name] || 0}</span>
+                        <button class="qty-btn" onclick="${hasOptions ? `showServiceOptions('${item.name}')` : `addToCart('${item.name}', ${item.price})`}">${hasOptions ? 'Add' : '+'}</button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    contentContainer.innerHTML = `
+        <div class="tab-pane fade show active" id="tab-search">
+            <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom border-secondary">
+                <h5 class="text-light m-0"><i class="fas fa-search me-2 text-info"></i>Found <span class="text-info">${results.length}</span> services for "<span class="text-white">${escapeHtml(query)}</span>"</h5>
+                <button class="btn btn-sm btn-outline-secondary text-white rounded-pill px-3" onclick="clearGlobalSearch()"><i class="fas fa-times me-1"></i>Clear Search</button>
+            </div>
+            <div class="row g-4">
+                ${cardsHtml}
+            </div>
+        </div>
+    `;
+
+    const servicesSection = document.getElementById('services');
+    if (servicesSection) {
+        servicesSection.scrollIntoView({ behavior: 'smooth' });
     }
 }
 
