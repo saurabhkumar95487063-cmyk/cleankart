@@ -618,17 +618,18 @@ header.sticky-top {
     }
     .hero-section h1,
     .hero-section .display-3 {
-        font-size: 2.35rem !important;
+        font-size: clamp(2.4rem, 8.8vw, 3.2rem) !important;
         letter-spacing: -0.5px !important;
         width: 100% !important;
         text-align: center !important;
+        white-space: nowrap !important;
     }
     .hero-section p.lead {
         font-size: 1rem !important;
     }
     .hero-section .container {
-        padding-left: 10px !important;
-        padding-right: 10px !important;
+        padding-left: 4px !important;
+        padding-right: 4px !important;
     }
     .container {
         padding-left: 15px;
@@ -995,9 +996,10 @@ header.sticky-top {
     }
     
     .hero-section .display-3 {
-        font-size: 2.35rem !important;
+        font-size: clamp(2.4rem, 8.8vw, 3.2rem) !important;
         letter-spacing: -0.5px !important;
         text-align: center !important;
+        white-space: nowrap !important;
     }
     
     .hero-section .lead {
