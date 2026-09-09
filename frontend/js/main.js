@@ -3198,11 +3198,107 @@ async function fetchAdminSalesReport() {
     }
 }
 
-// --- Admin Services Management ---
+// --- Admin Services & Categories Management ---
 let allServicesList = [];
+let allCategoriesList = [];
+
+function getSubCategoryBadgesForCategory(categoryName) {
+    if (categoryName === "Women's Wear") {
+        return '<span class="badge bg-dark border border-warning text-warning me-1">Summer Clothes</span><span class="badge bg-dark border border-info text-info">Winter Clothes</span>';
+    } else if (categoryName === "Premium Care") {
+        return '<span class="badge bg-dark border border-primary text-primary me-1 mb-1">Men\'s Premium Care</span><span class="badge bg-dark border border-danger text-danger me-1 mb-1">Women\'s Premium Care</span><span class="badge bg-dark border border-success text-success me-1 mb-1">Kids Premium Care</span><span class="badge bg-dark border border-warning text-warning mb-1">Home & Others Premium Care</span>';
+    } else if (["Men's Wear", "Kids", "Kids Wear", "Home & Others"].includes(categoryName)) {
+        return '<span class="badge bg-dark border border-warning text-warning me-1">Summer Wears</span><span class="badge bg-dark border border-info text-info">Winter Wears</span>';
+    }
+    return '<span class="badge bg-secondary">Standard</span>';
+}
+
+async function fetchAdminCategories() {
+    try {
+        const res = await fetch('/api/categories');
+        const categories = await res.json();
+        allCategoriesList = categories || [];
+        const table = document.getElementById('adminCategoriesTable');
+        if (table) {
+            table.innerHTML = allCategoriesList.map(c => `
+                <tr>
+                    <td class="fw-bold">${c.name}</td>
+                    <td><i class="${c.icon || 'fas fa-tags'} me-2 text-info"></i><small class="text-secondary">${c.icon || 'fas fa-tags'}</small></td>
+                    <td>${getSubCategoryBadgesForCategory(c.name)}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-info me-2" onclick="editCategory('${c._id}')" title="Edit Category"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteCategory('${c._id}')" title="Delete Category"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('') || '<tr><td colspan="4" class="text-center text-secondary py-3">No categories found</td></tr>';
+        }
+    } catch (err) {
+        console.error('Error fetching admin categories:', err);
+    }
+}
+
+function prepareCategoryForm() {
+    const form = document.getElementById('categoryForm');
+    if (form) form.reset();
+    const idEl = document.getElementById('categoryId');
+    if (idEl) idEl.value = '';
+    const titleEl = document.getElementById('categoryModalTitle');
+    if (titleEl) titleEl.innerHTML = '<i class="fas fa-folder-plus text-info me-2"></i>Add New Category';
+    
+    const modalEl = document.getElementById('categoryModal');
+    if (modalEl) {
+        const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+        modal.show();
+    }
+}
+
+function editCategory(id) {
+    const category = allCategoriesList.find(c => c._id === id);
+    if (!category) return;
+
+    const idEl = document.getElementById('categoryId');
+    if (idEl) idEl.value = category._id;
+
+    const catNameEl = document.getElementById('catName') || document.getElementById('categoryName');
+    if (catNameEl) catNameEl.value = category.name;
+
+    const catIconEl = document.getElementById('catIcon') || document.getElementById('categoryIcon');
+    if (catIconEl) catIconEl.value = category.icon || 'fas fa-tags';
+
+    const titleEl = document.getElementById('categoryModalTitle');
+    if (titleEl) titleEl.innerHTML = '<i class="fas fa-edit text-info me-2"></i>Edit Category';
+
+    const modalEl = document.getElementById('categoryModal');
+    if (modalEl) {
+        const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+        modal.show();
+    }
+}
+
+async function deleteCategory(id) {
+    if (!confirm('Are you sure you want to delete this category? Associated services will remain.')) return;
+    try {
+        const res = await fetch(`/api/categories/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${user.token}` }
+        });
+        if (res.ok) {
+            notifyUser('Category deleted successfully!', 'success');
+            fetchAdminCategories();
+            await loadCategoriesIntoSelect();
+            if (typeof fetchServices === 'function') fetchServices();
+        } else {
+            const err = await res.json();
+            notifyUser(err.message || 'Failed to delete category', 'info');
+        }
+    } catch (err) {
+        notifyUser('Failed to delete category', 'danger');
+    }
+}
 
 async function fetchAdminServices() {
     try {
+        fetchAdminCategories();
         const res = await fetch('/api/services');
         const services = await res.json();
         allServicesList = services;
@@ -3313,6 +3409,7 @@ async function loadCategoriesIntoSelect() {
 
 document.getElementById('categoryForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
+    const id = document.getElementById('categoryId')?.value;
     const catNameEl = document.getElementById('catName') || document.getElementById('categoryName');
     const catIconEl = document.getElementById('catIcon') || document.getElementById('categoryIcon');
     const name = catNameEl ? catNameEl.value.trim() : '';
@@ -3324,9 +3421,12 @@ document.getElementById('categoryForm')?.addEventListener('submit', async (e) =>
     }
 
     const data = { name, icon };
+    const url = id ? `/api/categories/${id}` : '/api/categories';
+    const method = id ? 'PUT' : 'POST';
+
     try {
-        const res = await fetch('/api/categories', {
-            method: 'POST',
+        const res = await fetch(url, {
+            method,
             headers: { 
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${user.token}`
@@ -3334,20 +3434,23 @@ document.getElementById('categoryForm')?.addEventListener('submit', async (e) =>
             body: JSON.stringify(data)
         });
         if (res.ok) {
-            notifyUser('Category added successfully!', 'success');
+            notifyUser(`Category ${id ? 'updated' : 'added'} successfully!`, 'success');
             document.getElementById('categoryForm').reset();
+            const idEl = document.getElementById('categoryId');
+            if (idEl) idEl.value = '';
             const modalEl = document.getElementById('categoryModal');
             if (modalEl) {
                 const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
                 if (modal) modal.hide();
             }
             await loadCategoriesIntoSelect();
+            fetchAdminCategories();
             if (typeof fetchServices === 'function') fetchServices();
         } else {
             const err = await res.json();
-            notifyUser(err.message || 'Failed to add category', 'info');
+            notifyUser(err.message || 'Failed to save category', 'info');
         }
-    } catch (err) { notifyUser('Error adding category', 'danger'); }
+    } catch (err) { notifyUser('Error saving category', 'danger'); }
 });
 
 async function editService(id) {
