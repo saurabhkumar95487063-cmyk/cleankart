@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cleankart-v21';
+const CACHE_NAME = 'cleankart-v22';
 
 self.addEventListener('install', (event) => {
     self.skipWaiting();
