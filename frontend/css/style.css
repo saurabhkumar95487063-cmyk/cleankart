@@ -1148,3 +1148,16 @@ header.sticky-top {
     10%, 30%, 50%, 70%, 90% { transform: translateX(-6px); }
     20%, 40%, 60%, 80% { transform: translateX(6px); }
 }
+
+/* Mobile Search Modal Perfect Alignment */
+#mobileSearchModal .modal-dialog {
+    margin: 12px auto !important;
+    width: calc(100% - 24px) !important;
+    max-width: 480px !important;
+}
+
+#mobileSearchModal .modal-content {
+    border-radius: 20px !important;
+    overflow: hidden !important;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6) !important;
+}
