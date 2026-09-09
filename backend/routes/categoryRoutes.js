@@ -52,19 +52,27 @@ router.put('/:id', protect, admin, async (req, res) => {
             return res.status(404).json({ message: 'Category not found' });
         }
         const oldName = category.name;
-        if (name) category.name = name.trim();
-        if (icon) category.icon = icon.trim();
-        if (subCategories !== undefined) {
-            if (Array.isArray(subCategories)) {
-                category.subCategories = subCategories.map(s => s.trim()).filter(Boolean);
-            } else if (typeof subCategories === 'string') {
-                category.subCategories = subCategories.split(',').map(s => s.trim()).filter(Boolean);
-            }
-        }
-        const updatedCategory = await category.save();
 
-        if (name && oldName !== category.name) {
-            await Service.updateMany({ category: oldName }, { category: category.name });
+        let subCats = undefined;
+        if (Array.isArray(subCategories)) {
+            subCats = subCategories.map(s => s.trim()).filter(Boolean);
+        } else if (typeof subCategories === 'string') {
+            subCats = subCategories.split(',').map(s => s.trim()).filter(Boolean);
+        }
+
+        const updateData = {};
+        if (name) updateData.name = name.trim();
+        if (icon) updateData.icon = icon.trim();
+        if (subCats !== undefined) updateData.subCategories = subCats;
+
+        const updatedCategory = await Category.findByIdAndUpdate(
+            req.params.id,
+            { $set: updateData },
+            { new: true, runValidators: true }
+        );
+
+        if (name && oldName !== updatedCategory.name) {
+            await Service.updateMany({ category: oldName }, { category: updatedCategory.name });
         }
 
         res.json(updatedCategory);

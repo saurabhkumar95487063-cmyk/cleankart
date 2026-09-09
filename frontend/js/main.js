@@ -3799,7 +3799,7 @@ document.getElementById('categoryForm')?.addEventListener('submit', async (e) =>
                 if (modal) modal.hide();
             }
             await loadCategoriesIntoSelect();
-            fetchAdminCategories();
+            await fetchAdminCategories();
             if (typeof fetchServices === 'function') fetchServices();
         } else {
             const err = await res.json();
