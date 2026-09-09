@@ -629,14 +629,18 @@ header.sticky-top {
     }
     .hero-section h1,
     .hero-section .display-3 {
-        font-size: clamp(2.7rem, 10.2vw, 3.6rem) !important;
+        font-size: clamp(2.3rem, 11.6vw, 3.8rem) !important;
         letter-spacing: -1px !important;
         width: 100% !important;
         text-align: center !important;
         white-space: nowrap !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
     }
     .hero-section p.lead {
-        font-size: clamp(0.98rem, 4.2vw, 1.15rem) !important;
+        font-size: clamp(1.02rem, 4.7vw, 1.25rem) !important;
         width: 100% !important;
         max-width: 100% !important;
         text-align: center !important;
@@ -644,8 +648,8 @@ header.sticky-top {
         padding-right: 0 !important;
     }
     .hero-section .container {
-        padding-left: 4px !important;
-        padding-right: 4px !important;
+        padding-left: 2px !important;
+        padding-right: 2px !important;
     }
     .container {
         padding-left: 15px;
@@ -1012,14 +1016,16 @@ header.sticky-top {
     }
     
     .hero-section .display-3 {
-        font-size: clamp(2.7rem, 10.2vw, 3.6rem) !important;
+        font-size: clamp(2.3rem, 11.6vw, 3.8rem) !important;
         letter-spacing: -1px !important;
         text-align: center !important;
         white-space: nowrap !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
     }
     
     .hero-section .lead {
-        font-size: clamp(0.98rem, 4.2vw, 1.15rem) !important;
+        font-size: clamp(1.02rem, 4.7vw, 1.25rem) !important;
         text-align: center !important;
         margin-bottom: 1.5rem !important; /* Reduce huge mb-5 gap */
         padding-left: 0 !important;
