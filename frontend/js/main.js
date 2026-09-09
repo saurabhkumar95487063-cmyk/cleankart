@@ -3496,9 +3496,10 @@ function getSubCategoryBadgesForCategory(categoryObjOrName) {
         return subCats.map(sc => `<span class="badge bg-dark border border-info text-info me-1 mb-1">${sc}</span>`).join('');
     }
 
+    const lowerName = (name || '').toLowerCase();
     if (name === "Women's Wear") {
         return '<span class="badge bg-dark border border-warning text-warning me-1 mb-1">Summer Clothes</span><span class="badge bg-dark border border-info text-info me-1 mb-1">Winter Clothes</span>';
-    } else if (name === "Premium Care") {
+    } else if (lowerName.includes("premium")) {
         return '<span class="badge bg-dark border border-primary text-primary me-1 mb-1">Men\'s Premium Care</span><span class="badge bg-dark border border-danger text-danger me-1 mb-1">Women\'s Premium Care</span><span class="badge bg-dark border border-success text-success me-1 mb-1">Kids Premium Care</span><span class="badge bg-dark border border-warning text-warning mb-1">Home & Others Premium Care</span>';
     } else if (["Men's Wear", "Kids", "Kids Wear", "Home & Others"].includes(name)) {
         return '<span class="badge bg-dark border border-warning text-warning me-1 mb-1">Summer Wears</span><span class="badge bg-dark border border-info text-info me-1 mb-1">Winter Wears</span>';
@@ -3565,9 +3566,10 @@ function editCategory(id) {
         if (category.subCategories && Array.isArray(category.subCategories) && category.subCategories.length > 0) {
             catSubCatEl.value = category.subCategories.join(', ');
         } else {
+            const lowerName = (category.name || '').toLowerCase();
             if (category.name === "Women's Wear") {
                 catSubCatEl.value = "Summer Clothes, Winter Clothes";
-            } else if (category.name === "Premium Care") {
+            } else if (lowerName.includes("premium")) {
                 catSubCatEl.value = "Men's Premium Care, Women's Premium Care, Kids Premium Care, Home & Others Premium Care";
             } else if (["Men's Wear", "Kids", "Kids Wear", "Home & Others"].includes(category.name)) {
                 catSubCatEl.value = "Summer Wears, Winter Wears";
@@ -3641,29 +3643,45 @@ function toggleSubCategoryVisibility() {
     const subCatSelect = document.getElementById('serviceSubCategory');
     if (!subCatSelect) return;
 
-    if (select.value === 'Premium Care') {
+    const selectedName = select.value ? select.value.trim() : '';
+    if (!selectedName) {
+        subCatContainer.style.display = 'none';
+        subCatSelect.value = '';
+        return;
+    }
+
+    // 1. Check if selected category exists in allCategoriesList with custom subCategories
+    const matchedCat = allCategoriesList.find(c => c.name === selectedName);
+    let subCats = (matchedCat && Array.isArray(matchedCat.subCategories) && matchedCat.subCategories.length > 0)
+        ? matchedCat.subCategories
+        : null;
+
+    // 2. Default fallbacks if not explicitly defined in DB
+    if (!subCats || subCats.length === 0) {
+        const lowerName = selectedName.toLowerCase();
+        if (lowerName.includes('premium')) {
+            subCats = [
+                "Men's Premium Care",
+                "Women's Premium Care",
+                "Kids Premium Care",
+                "Home & Others Premium Care"
+            ];
+        } else if (selectedName === "Women's Wear") {
+            subCats = ["Summer Clothes", "Winter Clothes"];
+        } else if (["Men's Wear", "Kids", "Kids Wear", "Home & Others"].includes(selectedName)) {
+            subCats = ["Summer Wears", "Winter Wears"];
+        }
+    }
+
+    if (subCats && subCats.length > 0) {
         subCatContainer.style.display = 'block';
-        subCatSelect.innerHTML = `
-            <option value="Men's Premium Care">Men's Premium Care</option>
-            <option value="Women's Premium Care">Women's Premium Care</option>
-            <option value="Kids Premium Care">Kids Premium Care</option>
-            <option value="Home & Others Premium Care">Home & Others Premium Care</option>
-        `;
-        if (!subCatSelect.value) subCatSelect.value = "Men's Premium Care";
-    } else if (select.value === "Women's Wear") {
-        subCatContainer.style.display = 'block';
-        subCatSelect.innerHTML = `
-            <option value="Summer Clothes">Summer Clothes</option>
-            <option value="Winter Clothes">Winter Clothes</option>
-        `;
-        if (!subCatSelect.value) subCatSelect.value = "Summer Clothes";
-    } else if (["Men's Wear", "Kids", "Kids Wear", "Home & Others"].includes(select.value)) {
-        subCatContainer.style.display = 'block';
-        subCatSelect.innerHTML = `
-            <option value="Summer Wears">Summer Wears</option>
-            <option value="Winter Wears">Winter Wears</option>
-        `;
-        if (!subCatSelect.value) subCatSelect.value = "Summer Wears";
+        const currentVal = subCatSelect.value;
+        subCatSelect.innerHTML = subCats.map(sc => `<option value="${sc}">${sc}</option>`).join('');
+        if (currentVal && subCats.includes(currentVal)) {
+            subCatSelect.value = currentVal;
+        } else {
+            subCatSelect.value = subCats[0];
+        }
     } else {
         subCatContainer.style.display = 'none';
         subCatSelect.value = '';
