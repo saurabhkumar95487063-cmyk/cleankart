@@ -558,16 +558,17 @@ header.sticky-top {
     .services-mobile-legend {
         float: none !important;
         width: auto !important;
-        padding: 4px 14px !important;
-        font-size: 0.85rem !important;
-        font-weight: 700 !important;
+        padding: 6px 20px !important;
+        font-size: 1.1rem !important;
+        font-weight: 800 !important;
         color: #38bdf8 !important;
         background: #0b0d11 !important;
-        border: 1px solid #38bdf8 !important;
+        border: 1.5px solid #38bdf8 !important;
         border-radius: 30px !important;
-        margin-left: 12px !important;
-        margin-bottom: 12px !important;
-        box-shadow: 0 0 10px rgba(56, 189, 248, 0.25) !important;
+        margin-left: 14px !important;
+        margin-bottom: 14px !important;
+        box-shadow: 0 0 14px rgba(56, 189, 248, 0.3) !important;
+        letter-spacing: 0.5px !important;
     }
     #categoryTabs {
         display: flex !important;
