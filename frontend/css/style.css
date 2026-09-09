@@ -1096,7 +1096,10 @@ header.sticky-top {
 /* --- PREMIUM MOBILE BOTTOM NAVIGATION --- */
 @media (max-width: 991px) {
     body {
-        padding-bottom: 75px !important; /* Space to prevent content from hiding under mobile nav */
+        padding-bottom: 65px !important; /* Matches mobile bottom nav height */
+    }
+    #mainFooter {
+        padding-bottom: 10px !important; /* Eliminates gap between Privacy Policy and bottom nav */
     }
     #cartFAB {
         display: none !important; /* Hide old redundant floating action button on mobile */
