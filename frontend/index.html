@@ -79,12 +79,12 @@
                 <img src="images/cleankart_logo.png" alt="CleanKart Logo" style="height: 38px; margin-right: 10px; border-radius: 8px;"><span class="d-none d-sm-inline">CleanKart</span>
             </a>
 
-            <!-- Header Search Bar (Always Visible on Mobile & Desktop) -->
-            <div class="search-input-wrapper mx-1 mx-sm-3 flex-grow-1" style="max-width: 320px;">
+            <!-- Header Search Bar (Desktop Only) -->
+            <div class="search-input-wrapper d-none d-lg-block mx-3 flex-grow-1" style="max-width: 320px;">
                 <div class="input-group input-group-sm rounded-pill overflow-hidden border border-secondary shadow-sm">
-                    <span class="input-group-text bg-dark text-info border-0 ps-2 ps-sm-3"><i class="fas fa-search"></i></span>
+                    <span class="input-group-text bg-dark text-info border-0 ps-3"><i class="fas fa-search"></i></span>
                     <input type="text" id="globalSearchInput" class="form-control bg-dark text-white border-0 shadow-none" placeholder="Search services..." oninput="handleGlobalSearch(this.value)">
-                    <button class="btn btn-dark text-secondary border-0 pe-2 pe-sm-3 d-none" type="button" id="clearSearchBtn" onclick="clearGlobalSearch()"><i class="fas fa-times"></i></button>
+                    <button class="btn btn-dark text-secondary border-0 pe-3 d-none" type="button" id="clearSearchBtn" onclick="clearGlobalSearch()"><i class="fas fa-times"></i></button>
                 </div>
             </div>
 
@@ -1776,6 +1776,10 @@
             <i class="fas fa-th-large"></i>
             <span>Categories</span>
         </button>
+        <button class="mobile-nav-item" id="mobileNavSearch" onclick="openMobileSearchModal(); selectMobileNavItem(this);">
+            <i class="fas fa-search text-info"></i>
+            <span class="text-info">Search</span>
+        </button>
         <button class="mobile-nav-item" id="mobileNavAccount" onclick="triggerMobileAccountAction(); selectMobileNavItem(this);">
             <i class="fas fa-user"></i>
             <span>Account</span>
@@ -1785,6 +1789,28 @@
             <span class="mobile-cart-badge d-none" id="mobileNavCartBadge">0</span>
             <span>Cart</span>
         </button>
+    </div>
+
+    <!-- Mobile Search Modal -->
+    <div class="modal fade" id="mobileSearchModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
+            <div class="modal-content bg-dark text-white border-secondary">
+                <div class="modal-header border-secondary py-3">
+                    <div class="input-group input-group-lg rounded-pill overflow-hidden border border-info shadow-sm w-100 me-2">
+                        <span class="input-group-text bg-dark text-info border-0 ps-3"><i class="fas fa-search"></i></span>
+                        <input type="text" id="mobileSearchInput" class="form-control bg-dark text-white border-0 shadow-none fs-6" placeholder="Search services (e.g. Shirt, Saree...)" oninput="handleMobileSearch(this.value)">
+                        <button class="btn btn-dark text-secondary border-0 pe-3 d-none" type="button" id="clearMobileSearchBtn" onclick="clearMobileSearch()"><i class="fas fa-times"></i></button>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white ms-1" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-3 overflow-auto" id="mobileSearchResultsContainer" style="max-height: 75vh;">
+                    <div class="text-center py-4 text-secondary">
+                        <i class="fas fa-search fa-2x mb-2 text-info"></i>
+                        <p class="mb-0 small">Type above to search laundry services instantly...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Garment Photos Viewer Modal -->

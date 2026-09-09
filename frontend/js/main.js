@@ -2130,6 +2130,103 @@ function clearGlobalSearch() {
     handleGlobalSearch('');
 }
 
+function openMobileSearchModal() {
+    const modalEl = document.getElementById('mobileSearchModal');
+    if (modalEl) {
+        const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+        modal.show();
+        setTimeout(() => {
+            const input = document.getElementById('mobileSearchInput');
+            if (input) input.focus();
+        }, 300);
+    }
+}
+
+function handleMobileSearch(query) {
+    const clearBtn = document.getElementById('clearMobileSearchBtn');
+    const container = document.getElementById('mobileSearchResultsContainer');
+    const q = (query || '').trim().toLowerCase();
+
+    const desktopInput = document.getElementById('globalSearchInput');
+    if (desktopInput) desktopInput.value = query;
+
+    if (clearBtn) {
+        if (q.length > 0) clearBtn.classList.remove('d-none');
+        else clearBtn.classList.add('d-none');
+    }
+
+    if (!q) {
+        if (container) {
+            container.innerHTML = `
+                <div class="text-center py-4 text-secondary">
+                    <i class="fas fa-search fa-2x mb-2 text-info"></i>
+                    <p class="mb-0 small">Type above to search laundry services instantly...</p>
+                </div>
+            `;
+        }
+        return;
+    }
+
+    const matched = globalServicesCache.filter(item => {
+        const nameMatch = (item.name || '').toLowerCase().includes(q);
+        const catMatch = (item.category || '').toLowerCase().includes(q);
+        const subCatMatch = (item.subCategory || '').toLowerCase().includes(q);
+        const priceOptMatch = item.prices && item.prices.some(p => (p.serviceType || '').toLowerCase().includes(q));
+        return nameMatch || catMatch || subCatMatch || priceOptMatch;
+    });
+
+    if (!container) return;
+
+    if (matched.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-4">
+                <i class="fas fa-search-minus fa-2x text-secondary mb-2"></i>
+                <h6 class="text-light">No services found for "<span class="text-info">${escapeHtml(q)}</span>"</h6>
+                <p class="text-secondary x-small">Try searching for keywords like Shirt, Saree, Jacket, Blanket, etc.</p>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = `
+        <div class="small text-secondary mb-3"><i class="fas fa-search me-1 text-info"></i>Found ${matched.length} services</div>
+        <div class="row g-3">
+            ${matched.map(item => {
+                const iconClass = item.icon || 'fas fa-shirt';
+                const hasOptions = item.prices && item.prices.length > 0;
+                const displayPrice = hasOptions ? `From ₹${Math.min(...item.prices.map(p => p.price))}` : `₹${item.price}`;
+                let iconHtml = `<i class="${iconClass}"></i>`;
+                if (item.image) {
+                    iconHtml = `<img src="/uploads/${item.image}" alt="${item.name}" onerror="this.onerror=null; this.parentNode.innerHTML='<i class=\\'${iconClass}\\'></i>';">`;
+                }
+                return `
+                    <div class="col-6">
+                        <div class="service-card text-center p-2">
+                            <span class="badge bg-dark border border-secondary text-info mb-1 align-self-center" style="font-size: 0.65rem;">${item.category || 'General'}</span>
+                            <div class="icon-container" style="width: 45px; height: 45px; margin-bottom: 5px;">
+                                ${iconHtml}
+                            </div>
+                            <h6 class="fw-bold text-white small mb-1">${escapeHtml(item.name)}</h6>
+                            <p class="text-info x-small mb-2">${displayPrice}</p>
+                            <div class="qty-controls">
+                                <button class="qty-btn btn-outline-secondary" onclick="removeFromCart('${item.name}')">-</button>
+                                <span class="qty-number" id="qty-${item.name.replace(/\s+/g, '')}">${cart[item.name] || 0}</span>
+                                <button class="qty-btn" onclick="${hasOptions ? `showServiceOptions('${item.name}')` : `addToCart('${item.name}', ${item.price})`}">${hasOptions ? 'Add' : '+'}</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('')}
+        </div>
+    `;
+}
+
+function clearMobileSearch() {
+    const input = document.getElementById('mobileSearchInput');
+    if (input) input.value = '';
+    handleMobileSearch('');
+}
+
 function renderSearchResults(results, query) {
     const tabContainer = document.getElementById('categoryTabs');
     const contentContainer = document.getElementById('categoryTabContent');
