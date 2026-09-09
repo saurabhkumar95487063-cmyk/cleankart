@@ -2359,25 +2359,36 @@ function getPremiumSubCategory(item) {
 }
 
 function getItemSubCategoryLabel(item, categoryName) {
-    if (item.subCategory && item.subCategory.trim()) {
-        return item.subCategory.trim();
-    }
     const cat = categoryName || item.category || '';
-    const key = getItemSubCategoryKey(item);
+    let sub = item.subCategory && item.subCategory.trim() ? item.subCategory.trim() : '';
+
     if (cat === 'Premium Care') {
-        return getPremiumSubCategory(item);
+        return sub || getPremiumSubCategory(item);
     }
+
+    const key = getItemSubCategoryKey(item);
+    
+    let prefix = '';
+    if (cat === "Men's Wear" || (cat.toLowerCase().includes('men') && !cat.toLowerCase().includes('women'))) prefix = "Men's";
+    else if (cat === "Women's Wear" || cat.toLowerCase().includes('women')) prefix = "Women's";
+    else if (cat === "Kids" || cat === "Kids Wear" || cat.toLowerCase().includes('kid')) prefix = "Kids";
+
+    if (sub) {
+        if (prefix && !sub.toLowerCase().includes(prefix.toLowerCase().replace(/[^a-z]/g, ''))) {
+            return `${prefix} ${sub}`;
+        }
+        return sub;
+    }
+
     if (key === 'summer') {
-        return cat === "Women's Wear" ? "Summer Clothes" : "Summer Wears";
+        return prefix ? `${prefix} ${cat === "Women's Wear" ? 'Summer Clothes' : 'Summer Wears'}` : 'Summer Wears';
     }
     if (key === 'winter') {
-        return cat === "Women's Wear" ? "Winter Clothes" : "Winter Wears";
+        return prefix ? `${prefix} ${cat === "Women's Wear" ? 'Winter Clothes' : 'Winter Wears'}` : 'Winter Wears';
     }
-    if (key === 'mens') return "Men's Wears";
-    if (key === 'womens') return "Women's Clothes";
-    if (key === 'kids') return "Kids Wears";
-    if (key === 'homeothers') return "Home & Others";
-    return "";
+
+    if (prefix) return `${prefix} ${cat}`;
+    return cat;
 }
 
 window.filterSubCategory = function(subType, tabId, btnElement) {
