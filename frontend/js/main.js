@@ -3508,11 +3508,11 @@ function getSubCategoryBadgesForCategory(categoryObjOrName) {
     }
 
     const lowerName = (name || '').toLowerCase();
-    if (name === "Women's Wear") {
+    if (lowerName.includes("women")) {
         return '<span class="badge bg-dark border border-warning text-warning me-1 mb-1">Summer Clothes</span><span class="badge bg-dark border border-info text-info me-1 mb-1">Winter Clothes</span>';
     } else if (lowerName.includes("premium")) {
         return '<span class="badge bg-dark border border-primary text-primary me-1 mb-1">Men\'s Premium Care</span><span class="badge bg-dark border border-danger text-danger me-1 mb-1">Women\'s Premium Care</span><span class="badge bg-dark border border-success text-success me-1 mb-1">Kids Premium Care</span><span class="badge bg-dark border border-warning text-warning mb-1">Home & Others Premium Care</span>';
-    } else if (["Men's Wear", "Kids", "Kids Wear", "Home & Others"].includes(name)) {
+    } else if (lowerName.includes("men") || lowerName.includes("kid") || lowerName.includes("home") || lowerName.includes("other")) {
         return '<span class="badge bg-dark border border-warning text-warning me-1 mb-1">Summer Wears</span><span class="badge bg-dark border border-info text-info me-1 mb-1">Winter Wears</span>';
     }
     return '<span class="badge bg-secondary">Standard</span>';
@@ -3578,11 +3578,11 @@ function editCategory(id) {
             catSubCatEl.value = category.subCategories.join(', ');
         } else {
             const lowerName = (category.name || '').toLowerCase();
-            if (category.name === "Women's Wear") {
+            if (lowerName.includes("women")) {
                 catSubCatEl.value = "Summer Clothes, Winter Clothes";
             } else if (lowerName.includes("premium")) {
                 catSubCatEl.value = "Men's Premium Care, Women's Premium Care, Kids Premium Care, Home & Others Premium Care";
-            } else if (["Men's Wear", "Kids", "Kids Wear", "Home & Others"].includes(category.name)) {
+            } else if (lowerName.includes("men") || lowerName.includes("kid") || lowerName.includes("home") || lowerName.includes("other")) {
                 catSubCatEl.value = "Summer Wears, Winter Wears";
             } else {
                 catSubCatEl.value = "";
@@ -3758,7 +3758,17 @@ document.getElementById('categoryForm')?.addEventListener('submit', async (e) =>
     const name = catNameEl ? catNameEl.value.trim() : '';
     const icon = (catIconEl && catIconEl.value.trim()) ? catIconEl.value.trim() : 'fas fa-tags';
     const subCatStr = catSubCatEl ? catSubCatEl.value.trim() : '';
-    const subCategories = subCatStr ? subCatStr.split(',').map(s => s.trim()).filter(Boolean) : [];
+    let subCategories = subCatStr ? subCatStr.split(',').map(s => s.trim()).filter(Boolean) : [];
+    if (subCategories.length === 0 && name) {
+        const lowerName = name.toLowerCase();
+        if (lowerName.includes("women")) {
+            subCategories = ["Summer Clothes", "Winter Clothes"];
+        } else if (lowerName.includes("premium")) {
+            subCategories = ["Men's Premium Care", "Women's Premium Care", "Kids Premium Care", "Home & Others Premium Care"];
+        } else if (lowerName.includes("men") || lowerName.includes("kid") || lowerName.includes("home") || lowerName.includes("other")) {
+            subCategories = ["Summer Wears", "Winter Wears"];
+        }
+    }
 
     if (!name) {
         notifyUser('Category name is required', 'warning');
