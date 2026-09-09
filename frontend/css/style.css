@@ -42,6 +42,17 @@ body {
     padding: 8px 12px;
 }
 
+/* Scrollbar Hiding Utility */
+.no-scrollbar {
+    -ms-overflow-style: none !important;
+    scrollbar-width: none !important;
+}
+.no-scrollbar::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+
 /* Sub Category Pill Styles */
 .sub-category-pill {
     transition: all 0.3s ease;
@@ -68,14 +79,14 @@ body {
 
 @media (max-width: 768px) {
     .sub-category-pill {
-        padding: 7px 10px !important;
+        padding: 6px 12px !important;
         font-size: 0.78rem !important;
     }
 }
 
 @media (max-width: 380px) {
     .sub-category-pill {
-        padding: 6px 8px !important;
+        padding: 5px 8px !important;
         font-size: 0.72rem !important;
     }
 }

@@ -2530,10 +2530,33 @@ async function renderServices(services) {
 
             let subCategoryPillsHtml = '';
             if (catServices.length > 0) {
-                if (cat.subCategories && cat.subCategories.length > 0) {
+                if (catNameLower.includes('premium')) {
                     subCategoryPillsHtml = `
-                        <div class="col-12 mb-3 text-center overflow-auto">
-                            <ul class="nav nav-pills justify-content-center align-items-center flex-nowrap gap-1 gap-sm-2" id="subCategoryPills-${catId}">
+                        <div class="col-12 mb-3 text-center no-scrollbar overflow-auto px-1">
+                            <div class="d-flex flex-column align-items-center gap-2 w-100" id="subCategoryPills-${catId}">
+                                <div class="d-flex justify-content-center align-items-center flex-wrap gap-1 gap-sm-2 w-100">
+                                    <button type="button" class="nav-link sub-category-pill active" onclick="filterSubCategory('mens', '${catId}', this)">
+                                        <i class="fas fa-mars me-1"></i> Men's Premium Care
+                                    </button>
+                                    <button type="button" class="nav-link sub-category-pill" onclick="filterSubCategory('womens', '${catId}', this)">
+                                        <i class="fas fa-venus me-1"></i> Women's Premium Care
+                                    </button>
+                                </div>
+                                <div class="d-flex justify-content-center align-items-center flex-wrap gap-1 gap-sm-2 w-100">
+                                    <button type="button" class="nav-link sub-category-pill" onclick="filterSubCategory('kids', '${catId}', this)">
+                                        <i class="fas fa-child me-1"></i> Kids Premium Care
+                                    </button>
+                                    <button type="button" class="nav-link sub-category-pill" onclick="filterSubCategory('homeothers', '${catId}', this)">
+                                        <i class="fas fa-house me-1"></i> Home & Others Premium Care
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else if (cat.subCategories && cat.subCategories.length > 0) {
+                    subCategoryPillsHtml = `
+                        <div class="col-12 mb-3 text-center no-scrollbar overflow-auto px-1">
+                            <ul class="nav nav-pills justify-content-center align-items-center flex-wrap gap-1 gap-sm-2 w-100" id="subCategoryPills-${catId}">
                                 ${cat.subCategories.map((sub, sIdx) => {
                                     let subKey = sub.toLowerCase().replace(/[^a-z0-9]/g, '');
                                     if (subKey.includes('winter')) subKey = 'winter';
@@ -2553,33 +2576,10 @@ async function renderServices(services) {
                             </ul>
                         </div>
                     `;
-                } else if (catNameLower.includes('premium')) {
-                    subCategoryPillsHtml = `
-                        <div class="col-12 mb-3 text-center">
-                            <div class="d-flex flex-column align-items-center gap-2" id="subCategoryPills-${catId}">
-                                <div class="d-flex justify-content-center align-items-center flex-wrap gap-2">
-                                    <button type="button" class="nav-link sub-category-pill active" onclick="filterSubCategory('mens', '${catId}', this)">
-                                        <i class="fas fa-mars me-1"></i> Men's Premium Care
-                                    </button>
-                                    <button type="button" class="nav-link sub-category-pill" onclick="filterSubCategory('womens', '${catId}', this)">
-                                        <i class="fas fa-venus me-1"></i> Women's Premium Care
-                                    </button>
-                                </div>
-                                <div class="d-flex justify-content-center align-items-center flex-wrap gap-2">
-                                    <button type="button" class="nav-link sub-category-pill" onclick="filterSubCategory('kids', '${catId}', this)">
-                                        <i class="fas fa-child me-1"></i> Kids Premium Care
-                                    </button>
-                                    <button type="button" class="nav-link sub-category-pill" onclick="filterSubCategory('homeothers', '${catId}', this)">
-                                        <i class="fas fa-house me-1"></i> Home & Others Premium Care
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    `;
                 } else if (cat.name === "Women's Wear" || catNameLower.includes('women')) {
                     subCategoryPillsHtml = `
-                        <div class="col-12 mb-3 text-center overflow-auto">
-                            <ul class="nav nav-pills justify-content-center align-items-center flex-nowrap gap-1 gap-sm-2" id="subCategoryPills-${catId}">
+                        <div class="col-12 mb-3 text-center no-scrollbar overflow-auto px-1">
+                            <ul class="nav nav-pills justify-content-center align-items-center flex-wrap gap-1 gap-sm-2 w-100" id="subCategoryPills-${catId}">
                                 <li class="nav-item">
                                     <button type="button" class="nav-link sub-category-pill active" onclick="filterSubCategory('summer', '${catId}', this)">
                                         <i class="fas fa-sun me-1"></i> Summer Clothes
@@ -2595,8 +2595,8 @@ async function renderServices(services) {
                     `;
                 } else if (["Men's Wear", "Kids", "Kids Wear", "Home & Others"].includes(cat.name) || catNameLower.includes('men') || catNameLower.includes('kid') || catNameLower.includes('home')) {
                     subCategoryPillsHtml = `
-                        <div class="col-12 mb-3 text-center overflow-auto">
-                            <ul class="nav nav-pills justify-content-center align-items-center flex-nowrap gap-1 gap-sm-2" id="subCategoryPills-${catId}">
+                        <div class="col-12 mb-3 text-center no-scrollbar overflow-auto px-1">
+                            <ul class="nav nav-pills justify-content-center align-items-center flex-wrap gap-1 gap-sm-2 w-100" id="subCategoryPills-${catId}">
                                 <li class="nav-item">
                                     <button type="button" class="nav-link sub-category-pill active" onclick="filterSubCategory('summer', '${catId}', this)">
                                         <i class="fas fa-sun me-1"></i> Summer Wears
