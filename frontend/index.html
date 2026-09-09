@@ -73,28 +73,32 @@
 <body>
 
     <!-- Header -->
-    <nav class="navbar navbar-expand-lg navbar-dark fixed-top bg-dark-glass border-bottom border-secondary py-3" style="backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); z-index: 1030;">
-        <div class="container">
-            <a class="navbar-brand fw-bold fs-3 text-primary d-flex align-items-center" href="#">
-                <img src="images/cleankart_logo.png" alt="CleanKart Logo" style="height: 40px; margin-right: 20px; border-radius: 8px;">CleanKart
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top bg-dark-glass border-bottom border-secondary py-2 py-lg-3" style="backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); z-index: 1030;">
+        <div class="container d-flex align-items-center justify-content-between flex-nowrap">
+            <a class="navbar-brand fw-bold fs-3 text-primary d-flex align-items-center me-2 me-lg-4" href="#">
+                <img src="images/cleankart_logo.png" alt="CleanKart Logo" style="height: 38px; margin-right: 10px; border-radius: 8px;"><span class="d-none d-sm-inline">CleanKart</span>
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+
+            <!-- Header Search Bar (Always Visible on Mobile & Desktop) -->
+            <div class="search-input-wrapper mx-1 mx-sm-3 flex-grow-1" style="max-width: 320px;">
+                <div class="input-group input-group-sm rounded-pill overflow-hidden border border-secondary shadow-sm">
+                    <span class="input-group-text bg-dark text-info border-0 ps-2 ps-sm-3"><i class="fas fa-search"></i></span>
+                    <input type="text" id="globalSearchInput" class="form-control bg-dark text-white border-0 shadow-none" placeholder="Search services..." oninput="handleGlobalSearch(this.value)">
+                    <button class="btn btn-dark text-secondary border-0 pe-2 pe-sm-3 d-none" type="button" id="clearSearchBtn" onclick="clearGlobalSearch()"><i class="fas fa-times"></i></button>
+                </div>
+            </div>
+
+            <button class="navbar-toggler ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
+
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                     <li class="nav-item"><a class="nav-link active" id="nav-home" href="javascript:void(0)" onclick="showSection('home'); window.scrollTo(0,0);">Home</a></li>
                     <li class="nav-item"><a class="nav-link" id="nav-categories" href="javascript:void(0)" onclick="showSection('home'); document.querySelectorAll('.nav-link').forEach(l=>l.classList.remove('active')); this.classList.add('active'); setTimeout(() => document.getElementById('services').scrollIntoView({behavior: 'smooth'}), 50);">Categories</a></li>
                     <li class="nav-item"><a class="nav-link" id="nav-tracking" href="javascript:void(0)" onclick="showSection('tracking')">Track Order</a></li>
                     <li class="nav-item"><a class="nav-link" id="nav-myOrders" href="javascript:void(0)" onclick="showSection('myOrders')">My Orders</a></li>
                 </ul>
-                <div class="search-input-wrapper mx-lg-3 my-2 my-lg-0 flex-grow-1" style="max-width: 260px;">
-                    <div class="input-group input-group-sm rounded-pill overflow-hidden border border-secondary shadow-sm">
-                        <span class="input-group-text bg-dark text-info border-0 ps-3"><i class="fas fa-search"></i></span>
-                        <input type="text" id="globalSearchInput" class="form-control bg-dark text-white border-0 shadow-none" placeholder="Search services..." oninput="handleGlobalSearch(this.value)">
-                        <button class="btn btn-dark text-secondary border-0 pe-3 d-none" type="button" id="clearSearchBtn" onclick="clearGlobalSearch()"><i class="fas fa-times"></i></button>
-                    </div>
-                </div>
                 <div class="d-flex align-items-center" id="authButtons">
                     <button class="btn btn-outline-primary me-2" data-bs-toggle="modal" data-bs-target="#loginModal">Login</button>
                     <button class="btn btn-primary me-4" data-bs-toggle="modal" data-bs-target="#signupModal">Sign Up</button>
