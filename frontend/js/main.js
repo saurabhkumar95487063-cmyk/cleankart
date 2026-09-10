@@ -4614,8 +4614,10 @@ window.addEventListener('beforeinstallprompt', (e) => {
     
     // Show custom install banners if present
     const bannerLogin = document.getElementById('pwaInstallBannerLogin');
+    const bannerSignup = document.getElementById('pwaInstallBannerSignup');
     const bannerProfile = document.getElementById('pwaInstallBannerProfile');
     if (bannerLogin) bannerLogin.classList.remove('d-none');
+    if (bannerSignup) bannerSignup.classList.remove('d-none');
     if (bannerProfile) bannerProfile.classList.remove('d-none');
 });
 
@@ -4627,8 +4629,10 @@ window.triggerPwaInstall = async function() {
         deferredPrompt = null;
         
         const bannerLogin = document.getElementById('pwaInstallBannerLogin');
+        const bannerSignup = document.getElementById('pwaInstallBannerSignup');
         const bannerProfile = document.getElementById('pwaInstallBannerProfile');
         if (bannerLogin) bannerLogin.classList.add('d-none');
+        if (bannerSignup) bannerSignup.classList.add('d-none');
         if (bannerProfile) bannerProfile.classList.add('d-none');
     } else {
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
@@ -4643,17 +4647,21 @@ window.triggerPwaInstall = async function() {
 // Setup click handlers for the install buttons
 document.addEventListener('DOMContentLoaded', () => {
     const installBtnLogin = document.getElementById('pwaInstallBtnLogin');
+    const installBtnSignup = document.getElementById('pwaInstallBtnSignup');
     const installBtnProfile = document.getElementById('pwaInstallBtnProfile');
     
     if (installBtnLogin) installBtnLogin.addEventListener('click', window.triggerPwaInstall);
+    if (installBtnSignup) installBtnSignup.addEventListener('click', window.triggerPwaInstall);
     if (installBtnProfile) installBtnProfile.addEventListener('click', window.triggerPwaInstall);
 });
 
 window.addEventListener('appinstalled', (event) => {
     console.log('CleanKart was successfully installed as a PWA!');
     const bannerLogin = document.getElementById('pwaInstallBannerLogin');
+    const bannerSignup = document.getElementById('pwaInstallBannerSignup');
     const bannerProfile = document.getElementById('pwaInstallBannerProfile');
     if (bannerLogin) bannerLogin.classList.add('d-none');
+    if (bannerSignup) bannerSignup.classList.add('d-none');
     if (bannerProfile) bannerProfile.classList.add('d-none');
 });
 

@@ -75,12 +75,9 @@
     <!-- Header -->
     <nav class="navbar navbar-expand-lg navbar-dark fixed-top bg-dark-glass border-bottom border-secondary py-2 py-lg-3" style="backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); z-index: 1030;">
         <div class="container d-flex flex-wrap flex-lg-nowrap align-items-center justify-content-between">
-            <div class="d-flex align-items-center me-lg-4">
-                <a class="navbar-brand fw-bold fs-3 text-primary d-flex align-items-center me-2 me-lg-3" href="#">
-                    <img src="images/cleankart_logo.png" alt="CleanKart Logo" style="height: 38px; margin-right: 10px; border-radius: 8px;"><span>CleanKart</span>
-                </a>
-                <button type="button" class="btn btn-sm btn-info rounded-pill px-3 text-dark fw-bold d-inline-flex align-items-center shadow-sm" id="headerInstallBtn" onclick="triggerPwaInstall()"><i class="fas fa-download me-1"></i>Install App</button>
-            </div>
+            <a class="navbar-brand fw-bold fs-3 text-primary d-flex align-items-center me-lg-4" href="#">
+                <img src="images/cleankart_logo.png" alt="CleanKart Logo" style="height: 38px; margin-right: 10px; border-radius: 8px;"><span>CleanKart</span>
+            </a>
 
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -1249,13 +1246,13 @@
                     </form>
 
                     <!-- Premium PWA Install Banner -->
-                    <div id="pwaInstallBannerLogin" class="mt-4 p-3 rounded-3 text-start d-none" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(99, 102, 241, 0.12)); border: 1px dashed rgba(59, 130, 246, 0.3);">
+                    <div id="pwaInstallBannerLogin" class="mt-4 p-3 rounded-3 text-start" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(99, 102, 241, 0.12)); border: 1px dashed rgba(59, 130, 246, 0.3);">
                         <div class="d-flex align-items-center justify-content-between">
                             <div>
                                 <h6 class="mb-0 text-white" style="font-size: 0.9rem;"><i class="fa-solid fa-wand-magic-sparkles text-info me-2"></i>Install CleanKart App</h6>
                                 <small class="text-secondary" style="font-size: 0.75rem;">Instant access on your home screen!</small>
                             </div>
-                            <button type="button" id="pwaInstallBtnLogin" class="btn btn-primary btn-sm px-3 rounded-pill fw-semibold" style="font-size: 0.8rem;">Install</button>
+                            <button type="button" id="pwaInstallBtnLogin" class="btn btn-primary btn-sm px-3 rounded-pill fw-semibold" style="font-size: 0.8rem;" onclick="triggerPwaInstall()">Install</button>
                         </div>
                     </div>
                 </div>
@@ -1301,6 +1298,17 @@
                             Already have an account? <a href="javascript:void(0)" onclick="bootstrap.Modal.getInstance(document.getElementById('signupModal')).hide(); setTimeout(() => { new bootstrap.Modal(document.getElementById('loginModal')).show(); }, 350);" class="text-primary text-decoration-none fw-semibold">Login</a>
                         </div>
                     </form>
+
+                    <!-- Premium PWA Install Banner -->
+                    <div id="pwaInstallBannerSignup" class="mt-4 p-3 rounded-3 text-start" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(99, 102, 241, 0.12)); border: 1px dashed rgba(59, 130, 246, 0.3);">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="mb-0 text-white" style="font-size: 0.9rem;"><i class="fa-solid fa-wand-magic-sparkles text-info me-2"></i>Install CleanKart App</h6>
+                                <small class="text-secondary" style="font-size: 0.75rem;">Instant access on your home screen!</small>
+                            </div>
+                            <button type="button" id="pwaInstallBtnSignup" class="btn btn-primary btn-sm px-3 rounded-pill fw-semibold" style="font-size: 0.8rem;" onclick="triggerPwaInstall()">Install</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
