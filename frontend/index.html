@@ -75,9 +75,12 @@
     <!-- Header -->
     <nav class="navbar navbar-expand-lg navbar-dark fixed-top bg-dark-glass border-bottom border-secondary py-2 py-lg-3" style="backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); z-index: 1030;">
         <div class="container d-flex flex-wrap flex-lg-nowrap align-items-center justify-content-between">
-            <a class="navbar-brand fw-bold fs-3 text-primary d-flex align-items-center me-lg-4" href="#">
-                <img src="images/cleankart_logo.png" alt="CleanKart Logo" style="height: 38px; margin-right: 10px; border-radius: 8px;"><span>CleanKart</span>
-            </a>
+            <div class="d-flex align-items-center me-lg-4">
+                <a class="navbar-brand fw-bold fs-3 text-primary d-flex align-items-center me-2 me-lg-3" href="#">
+                    <img src="images/cleankart_logo.png" alt="CleanKart Logo" style="height: 38px; margin-right: 10px; border-radius: 8px;"><span>CleanKart</span>
+                </a>
+                <button type="button" class="btn btn-sm btn-info rounded-pill px-3 text-dark fw-bold d-inline-flex align-items-center shadow-sm" id="headerInstallBtn" onclick="triggerPwaInstall()"><i class="fas fa-download me-1"></i>Install App</button>
+            </div>
 
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>

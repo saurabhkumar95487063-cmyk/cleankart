@@ -4612,43 +4612,45 @@ window.addEventListener('beforeinstallprompt', (e) => {
     // Stash the event so it can be triggered later
     deferredPrompt = e;
     
-    // Show the custom install banners inside Login and Profile Modals
+    // Show custom install banners if present
     const bannerLogin = document.getElementById('pwaInstallBannerLogin');
     const bannerProfile = document.getElementById('pwaInstallBannerProfile');
     if (bannerLogin) bannerLogin.classList.remove('d-none');
     if (bannerProfile) bannerProfile.classList.remove('d-none');
 });
 
+window.triggerPwaInstall = async function() {
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log(`User choice for PWA install: ${outcome}`);
+        deferredPrompt = null;
+        
+        const bannerLogin = document.getElementById('pwaInstallBannerLogin');
+        const bannerProfile = document.getElementById('pwaInstallBannerProfile');
+        if (bannerLogin) bannerLogin.classList.add('d-none');
+        if (bannerProfile) bannerProfile.classList.add('d-none');
+    } else {
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        if (isIOS) {
+            notifyUser('iPhone/iPad पर App Install करने के लिए: Safari में Share बटन (📤) दबाएं और "Add to Home Screen" चुनें।', 'info');
+        } else {
+            notifyUser('App Install करने के लिए: Browser के 3-dots (⋮) पर क्लिक करें और "Install App" या "Add to Home Screen" चुनें।', 'info');
+        }
+    }
+};
+
 // Setup click handlers for the install buttons
 document.addEventListener('DOMContentLoaded', () => {
     const installBtnLogin = document.getElementById('pwaInstallBtnLogin');
     const installBtnProfile = document.getElementById('pwaInstallBtnProfile');
     
-    const triggerInstall = async () => {
-        if (!deferredPrompt) return;
-        // Show the prompt
-        deferredPrompt.prompt();
-        // Wait for the user's choice
-        const { outcome } = await deferredPrompt.userChoice;
-        console.log(`User accepted the PWA install prompt: ${outcome}`);
-        
-        // Clear prompt
-        deferredPrompt = null;
-        
-        // Hide the custom install banners
-        const bannerLogin = document.getElementById('pwaInstallBannerLogin');
-        const bannerProfile = document.getElementById('pwaInstallBannerProfile');
-        if (bannerLogin) bannerLogin.classList.add('d-none');
-        if (bannerProfile) bannerProfile.classList.add('d-none');
-    };
-    
-    if (installBtnLogin) installBtnLogin.addEventListener('click', triggerInstall);
-    if (installBtnProfile) installBtnProfile.addEventListener('click', triggerInstall);
+    if (installBtnLogin) installBtnLogin.addEventListener('click', window.triggerPwaInstall);
+    if (installBtnProfile) installBtnProfile.addEventListener('click', window.triggerPwaInstall);
 });
 
 window.addEventListener('appinstalled', (event) => {
     console.log('CleanKart was successfully installed as a PWA!');
-    // Hide PWA banners if still visible
     const bannerLogin = document.getElementById('pwaInstallBannerLogin');
     const bannerProfile = document.getElementById('pwaInstallBannerProfile');
     if (bannerLogin) bannerLogin.classList.add('d-none');
