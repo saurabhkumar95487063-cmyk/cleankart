@@ -2195,9 +2195,13 @@ function handleMobileSearch(query) {
                 const iconClass = item.icon || 'fas fa-shirt';
                 const hasOptions = item.prices && item.prices.length > 0;
                 const displayPrice = hasOptions ? `From ₹${Math.min(...item.prices.map(p => p.price))}` : `₹${item.price}`;
+                const fallbackIcon = (item.name || '').toLowerCase().includes('t-shirt') ? 'fas fa-tshirt' : 'fas fa-shirt';
                 let iconHtml = `<i class="${iconClass}"></i>`;
-                if (item.image) {
-                    iconHtml = `<img src="/uploads/${item.image}" alt="${item.name}" onerror="this.onerror=null; this.parentNode.innerHTML='<i class=\\'${iconClass}\\'></i>';">`;
+                if (iconClass.startsWith('data:') || iconClass.startsWith('http') || iconClass.startsWith('/') || iconClass.includes('.')) {
+                    iconHtml = `<img src="${iconClass}" alt="${item.name}" onerror="this.onerror=null; this.parentNode.innerHTML='<i class=\\'${fallbackIcon}\\'></i>';">`;
+                } else if (item.image && item.image !== 'placeholder.png') {
+                    const imgSrc = item.image.startsWith('/') ? item.image : `/uploads/${item.image}`;
+                    iconHtml = `<img src="${imgSrc}" alt="${item.name}" onerror="this.onerror=null; this.parentNode.innerHTML='<i class=\\'${fallbackIcon}\\'></i>';">`;
                 }
                 const subCatLabel = getItemSubCategoryLabel(item, item.category);
                 const catSubTag = subCatLabel || item.category || 'General';
@@ -2260,9 +2264,13 @@ function renderSearchResults(results, query) {
         const iconClass = item.icon || 'fas fa-shirt';
         const hasOptions = item.prices && item.prices.length > 0;
         const displayPrice = hasOptions ? `From ₹${Math.min(...item.prices.map(p => p.price))}` : `₹${item.price}`;
+        const fallbackIcon = (item.name || '').toLowerCase().includes('t-shirt') ? 'fas fa-tshirt' : 'fas fa-shirt';
         let iconHtml = `<i class="${iconClass}"></i>`;
-        if (item.image) {
-            iconHtml = `<img src="/uploads/${item.image}" alt="${item.name}" onerror="this.onerror=null; this.parentNode.innerHTML='<i class=\\'${iconClass}\\'></i>';">`;
+        if (iconClass.startsWith('data:') || iconClass.startsWith('http') || iconClass.startsWith('/') || iconClass.includes('.')) {
+            iconHtml = `<img src="${iconClass}" alt="${item.name}" onerror="this.onerror=null; this.parentNode.innerHTML='<i class=\\'${fallbackIcon}\\'></i>';">`;
+        } else if (item.image && item.image !== 'placeholder.png') {
+            const imgSrc = item.image.startsWith('/') ? item.image : `/uploads/${item.image}`;
+            iconHtml = `<img src="${imgSrc}" alt="${item.name}" onerror="this.onerror=null; this.parentNode.innerHTML='<i class=\\'${fallbackIcon}\\'></i>';">`;
         }
         const subCatLabel = getItemSubCategoryLabel(item, item.category);
         const catSubTag = subCatLabel || item.category || 'General';
@@ -2493,8 +2501,9 @@ async function renderServices(services) {
                     if (!window.availableServices) window.availableServices = {};
                     window.availableServices[item.name] = item;
 
-                    const iconHtml = (iconClass.startsWith('http') || iconClass.startsWith('/') || iconClass.includes('.')) 
-                        ? `<img src="${iconClass}" alt="${item.name}">` 
+                    const fallbackIcon = (item.name || '').toLowerCase().includes('t-shirt') ? 'fas fa-tshirt' : (iconClass.startsWith('http') || iconClass.startsWith('/') || iconClass.startsWith('data:') || iconClass.includes('.')) ? 'fas fa-shirt' : iconClass;
+                    const iconHtml = (iconClass.startsWith('http') || iconClass.startsWith('/') || iconClass.startsWith('data:') || iconClass.includes('.')) 
+                        ? `<img src="${iconClass}" alt="${item.name}" onerror="this.onerror=null; this.parentNode.innerHTML='<i class=\\'${fallbackIcon}\\'></i>';">` 
                         : `<i class="${iconClass}"></i>`;
 
                     // Sub-category classification for filtering

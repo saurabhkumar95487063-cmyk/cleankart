@@ -1,4 +1,5 @@
 const Service = require('../models/Service');
+const fs = require('fs');
 
 const getServices = async (req, res) => {
     try {
@@ -15,7 +16,10 @@ const createService = async (req, res) => {
         let iconPath = icon;
         
         if (req.file) {
-            iconPath = `/uploads/icons/${req.file.filename}`;
+            const fileBuffer = fs.readFileSync(req.file.path);
+            const mimeType = req.file.mimetype || 'image/png';
+            iconPath = `data:${mimeType};base64,${fileBuffer.toString('base64')}`;
+            try { fs.unlinkSync(req.file.path); } catch (e) {}
         }
 
         const service = new Service({ 
@@ -43,7 +47,10 @@ const updateService = async (req, res) => {
             service.price = price ? Number(price) : service.price;
             
             if (req.file) {
-                service.icon = `/uploads/icons/${req.file.filename}`;
+                const fileBuffer = fs.readFileSync(req.file.path);
+                const mimeType = req.file.mimetype || 'image/png';
+                service.icon = `data:${mimeType};base64,${fileBuffer.toString('base64')}`;
+                try { fs.unlinkSync(req.file.path); } catch (e) {}
             } else if (icon) {
                 service.icon = icon;
             }
