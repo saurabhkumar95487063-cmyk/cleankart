@@ -2066,32 +2066,65 @@ async function updateStatus(orderId, status, bypassOtp = false, pickupInspection
     }
 }
 
-let globalServicesCache = [];
+let globalServicesCache = JSON.parse(localStorage.getItem('cachedServices') || '[]');
+let globalCategoriesCache = JSON.parse(localStorage.getItem('cachedCategories') || '[]');
+
+const defaultDemoServices = [
+    { category: "Men's Wear", name: "Shirt", price: 25, prices: [{serviceType: 'Standard Wash', price: 25}, {serviceType: 'Dry Clean', price: 80}], icon: "fas fa-shirt" },
+    { category: "Men's Wear", name: "T-Shirt", price: 15, prices: [{serviceType: 'Standard Wash', price: 15}, {serviceType: 'Iron Only', price: 10}], icon: "fas fa-tshirt" },
+    { category: "Men's Wear", name: "Jeans", price: 30, prices: [{serviceType: 'Standard Wash', price: 30}, {serviceType: 'Dry Clean', price: 100}], icon: "fas fa-user-tie" },
+    { category: "Women's Wear", name: "Saree", price: 40, prices: [{serviceType: 'Dry Clean', price: 150}, {serviceType: 'Steam Iron', price: 40}], icon: "fas fa-person-dress" },
+    { category: "Women's Wear", name: "Salwar Suit", price: 30, prices: [{serviceType: 'Standard Wash', price: 30}, {serviceType: 'Dry Clean', price: 120}], icon: "fas fa-person-dress" },
+    { category: "Home & Others", name: "Bed Sheet", price: 40, prices: [{serviceType: 'Standard Wash', price: 40}], icon: "fas fa-bed" },
+    { category: "Home & Others", name: "Blanket", price: 60, prices: [{serviceType: 'Dry Clean', price: 250}], icon: "fas fa-rug" },
+];
+
+const defaultDemoCategories = [
+    { name: "Men's Wear", icon: "fas fa-shirt" },
+    { name: "Women's Wear", icon: "fas fa-person-dress" },
+    { name: "Home & Others", icon: "fas fa-house" },
+    { name: "Premium Care", icon: "fas fa-crown" }
+];
 
 async function fetchServices() {
+    // 1. Instant render from local cache/defaults so services load in 0ms on app open!
+    const initialServices = (globalServicesCache && globalServicesCache.length > 0) ? globalServicesCache : defaultDemoServices;
+    const initialCategories = (globalCategoriesCache && globalCategoriesCache.length > 0) ? globalCategoriesCache : defaultDemoCategories;
+    
+    renderServices(initialServices, initialCategories);
+
+    // 2. Parallel background fetch for fresh data
     try {
-        const res = await fetch('/api/services');
-        const data = await res.json();
-        
-        if (!data || data.length === 0) {
-            console.log('No services in DB, using demo data');
-            const demoData = [
-                { category: "Men's Wear", name: "Shirt", price: 25, prices: [{serviceType: 'Standard Wash', price: 25}, {serviceType: 'Dry Clean', price: 80}], image: "shirt.png" },
-                { category: "Men's Wear", name: "T-Shirt", price: 15, prices: [{serviceType: 'Standard Wash', price: 15}, {serviceType: 'Iron Only', price: 10}], image: "tshirt.png" },
-                { category: "Men's Wear", name: "Jeans", price: 30, prices: [{serviceType: 'Standard Wash', price: 30}, {serviceType: 'Dry Clean', price: 100}], image: "jeans.png" },
-                { category: "Women's Wear", name: "Saree", price: 40, prices: [{serviceType: 'Dry Clean', price: 150}, {serviceType: 'Steam Iron', price: 40}], image: "saree.png" },
-                { category: "Women's Wear", name: "Salwar Suit", price: 30, prices: [{serviceType: 'Standard Wash', price: 30}, {serviceType: 'Dry Clean', price: 120}], image: "suit.png" },
-                { category: "Home & Others", name: "Bed Sheet", price: 40, prices: [{serviceType: 'Standard Wash', price: 40}], image: "sheet.png" },
-                { category: "Home & Others", name: "Blanket", price: 60, prices: [{serviceType: 'Dry Clean', price: 250}], image: "blanket.png" },
-            ];
-            globalServicesCache = demoData;
-            renderServices(demoData);
-        } else {
-            globalServicesCache = data;
-            renderServices(data);
+        const [servicesRes, categoriesRes] = await Promise.all([
+            fetch('/api/services').catch(() => null),
+            fetch('/api/categories').catch(() => null)
+        ]);
+
+        let hasNewData = false;
+
+        if (servicesRes && servicesRes.ok) {
+            const data = await servicesRes.json();
+            if (data && data.length > 0) {
+                globalServicesCache = data;
+                localStorage.setItem('cachedServices', JSON.stringify(data));
+                hasNewData = true;
+            }
+        }
+
+        if (categoriesRes && categoriesRes.ok) {
+            const catData = await categoriesRes.json();
+            if (catData && catData.length > 0) {
+                globalCategoriesCache = catData;
+                localStorage.setItem('cachedCategories', JSON.stringify(catData));
+                hasNewData = true;
+            }
+        }
+
+        if (hasNewData) {
+            renderServices(globalServicesCache, globalCategoriesCache);
         }
     } catch (err) {
-        console.error('Error fetching services:', err);
+        console.error('Error fetching services in background:', err);
     }
 }
 
@@ -2423,23 +2456,29 @@ window.filterSubCategory = function(subType, tabId, btnElement) {
     });
 };
 
-async function renderServices(services) {
+async function renderServices(services, categoriesInput) {
     const tabContainer = document.getElementById('categoryTabs');
     const contentContainer = document.getElementById('categoryTabContent');
     
     if (!tabContainer || !contentContainer) return;
 
     try {
-        const res = await fetch('/api/categories');
-        let categories = await res.json();
+        let categories = categoriesInput || (globalCategoriesCache && globalCategoriesCache.length > 0 ? globalCategoriesCache : null);
         
-        // If no categories in DB, use defaults to not break UI
+        if (!categories) {
+            try {
+                const res = await fetch('/api/categories');
+                categories = await res.json();
+                if (categories && categories.length > 0) {
+                    globalCategoriesCache = categories;
+                    localStorage.setItem('cachedCategories', JSON.stringify(categories));
+                }
+            } catch(e) {}
+        }
+        
+        // If no categories in DB or cache, use defaults to not break UI
         if (!categories || categories.length === 0) {
-            categories = [
-                { name: "Men's Wear", icon: "fas fa-shirt" },
-                { name: "Women's Wear", icon: "fas fa-person-dress" },
-                { name: "Home & Others", icon: "fas fa-house" }
-            ];
+            categories = defaultDemoCategories;
         }
 
         // Sort categories in a predefined, natural retail order
